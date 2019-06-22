@@ -1,20 +1,35 @@
+let rollup = require("rollup");
 let svelte = require("rollup-plugin-svelte");
 let resolve = require("rollup-plugin-node-resolve");
 let commonjs = require("rollup-plugin-commonjs");
-let livereload = require("rollup-plugin-livereload");
 let {terser} = require("rollup-plugin-terser");
+let requireFromString = require("require-from-string");
 
-module.exports = {
-	input: {
-		input: "src/main.js",
+/*
+input: path to a .svelte file
+
+output: the module.exports of the Svelte component compiled with generate: ssr
+(server-side rendering).
+
+The SSR module is an object with a render method, which takes props and returns
+
+{
+	head,
+	html,
+	css: {
+		code,
+		map
+	}
+}
+*/
+
+module.exports = async (path) => {
+	let inputOptions = {
+		input: path,
 		plugins: [
 			svelte({
 				dev: true, // TODO process.env.NODE_ENV
-				// we'll extract any component CSS out into
-				// a separate file — better for performance
-				css: css => {
-					css.write("public/bundle.css");
-				},
+				// TODO accept extra svelte options (inc preprocess) as args
 				//preprocess: {
 				//	style: sass
 				//},
@@ -32,19 +47,19 @@ module.exports = {
 			
 			commonjs(),
 	
-			// Watch the `public` directory and refresh the
-			// browser on changes when not in production
 			//!production && livereload("public"),
 	
-			// If we're building for production (npm run build
-			// instead of npm run dev), minify
 			//production && terser()
 		],
-	},
-	output: {
-		file: "public/bundle.js",
-		format: "iife",
-		name: "app",
-		sourcemap: true,
-	},
-};
+	};
+	
+	let outputOptions = {
+		format: "cjs",
+	};
+	
+	let bundle = await rollup.rollup(inputOptions);
+	
+	let {output} = await bundle.generate(outputOptions);
+	
+	return requireFromString(output[0].code);
+}

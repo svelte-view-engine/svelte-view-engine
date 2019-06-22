@@ -3,6 +3,10 @@ import Widget from "./Widget.svelte";
 
 let prop = "789";
 
+let load = () => {
+	alert("test");
+}
+
 export let name = 123;
 </script>
 
@@ -21,5 +25,5 @@ div {
 
 <div>
 	Hello {name}
-	<Widget prop={prop}/>
+	<Widget {prop}/>
 </div>

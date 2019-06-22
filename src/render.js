@@ -1,68 +1,49 @@
-let rollup = require("rollup");
-let svelte = require("rollup-plugin-svelte");
-let resolve = require("rollup-plugin-node-resolve");
-let commonjs = require("rollup-plugin-commonjs");
-let {terser} = require("rollup-plugin-terser");
+let getSsrComponent = require("./getSsrComponent");
+let getDomComponent = require("./getDomComponent");
+let fs = require("flowfs");
+
+/*
+options
+
+- whether to render the SSR once and cache (without any props) or on each res.render
+*/
+
+let cache = {};
 
 module.exports = async (path) => {
-	let allCss = [];
-	
-	let options = {
-		input: {
-			input: path,
-			plugins: [
-				svelte({
-					dev: true, // TODO process.env.NODE_ENV
-					// we'll extract any component CSS out into
-					// a separate file — better for performance
-					css: (css) => {
-						allCss.push(css);
-					},
-					//preprocess: {
-					//	style: sass
-					//},
-					generate: "ssr",
-				}),
-		
-				// If you have external dependencies installed from
-				// npm, you'll most likely need these plugins. In
-				// some cases you'll need additional configuration —
-				// consult the documentation for details:
-				// https://github.com/rollup/rollup-plugin-commonjs
-				resolve({
-					browser: true
-				}),
-				
-				commonjs(),
-		
-				// Watch the `public` directory and refresh the
-				// browser on changes when not in production
-				//!production && livereload("public"),
-		
-				// If we're building for production (npm run build
-				// instead of npm run dev), minify
-				//production && terser()
-			],
-		},
-		output: {
-			format: "cjs",
-			name: "Page",
-			sourcemap: true,
-		},
-	};
-	
-	let bundle = await rollup.rollup(options.input);
-	
-	let {output} = await bundle.generate(options.output);
-	
-	for (let chunk of output) {
-		if (chunk.isAsset) {
-			// not sure what assets are, but our css is handled by Svelte.
-		} else {
-			console.log("Chunk");
-			console.log(chunk.code);
-		}
+	if (cache[path]) {
+		return cache[path];
 	}
 	
-	console.log(allCss);
+	let name = fs(path).basename;
+	
+	let Component = await getSsrComponent(path);
+	let {head, html, css} = Component.render();
+	let js = await getDomComponent(path);
+	
+	let str = `
+		<!doctype html>
+		<html>
+			<head>
+				${head}
+				<style>
+				${css}
+				</style>
+			</head>
+			<body>
+				${html}
+				<script>
+				${js}
+				</script>
+				<script>
+				new ${name}({
+					target: document.body,
+					hydrate: true,
+				});
+				</script>
+			</body>
+		</html>
+	`;
+	
+	console.log(str);
 }
