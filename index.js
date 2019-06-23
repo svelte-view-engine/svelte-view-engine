@@ -40,6 +40,6 @@ module.exports = (opts) => {
 			pages[path] = new Page(template, path, options);
 		}
 		
-		callback(null, await pages[path].render(locals));
+		callback(null, await pages[path].render(sendLocals));
 	}
 }
