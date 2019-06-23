@@ -33,12 +33,12 @@ render() {
 */
 
 module.exports = class {
-	constructor(path, watch) {
+	constructor(path, options) {
 		this.path = path;
 		this.ready = false;
 		this.sections = [];
 		
-		if (watch) {
+		if (options.watch) {
 			chokidar.watch(path).on("change", () => {
 				this.ready = false;
 			});

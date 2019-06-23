@@ -13,24 +13,19 @@ TODO use Buffers or Streams if Express supports them, instead of strings
 */
 
 module.exports = class {
-	constructor(template, path, watch) {
+	constructor(template, path, options) {
 		this.template = template;
 		this.path = path;
+		this.options = options;
 		this.name = fs(path).basename;
 		this.ready = false;
 		this.pendingBuild = null;
-		
-		if (watch) {
-			chokidar.watch(path).on("change", () => {
-				this.ready = false;
-			});
-		}
 		
 		this.build();
 	}
 	
 	async _build() {
-		this.component = await buildComponent(this.path);
+		this.component = await buildComponent(this.path, this.options);
 	}
 	
 	async build() {
@@ -40,11 +35,19 @@ module.exports = class {
 		
 		await this.pendingBuild;
 		
-		if (this.watcher) {
-			this.watcher.close();
+		if (this.options.watch) {
+			if (this.watcher) {
+				this.watcher.close();
+			}
+			
+			this.watcher = chokidar.watch(this.component.watchFiles);
+			
+			this.watcher.on("change", () => {
+				this.ready = false;
+			});
 		}
 		
-		this.watcher = chokidar.watch(this.component.watchFiles);
+		
 		this.pendingBuild = null;
 		this.ready = true;
 	}
@@ -71,12 +74,18 @@ module.exports = class {
 			
 			css: () => {
 				str += this.component.css.code;
-				// TODO map
+				
+				if (this.component.css.map) {
+					str += this.component.css.map;
+				}
 			},
 			
 			js: () => {
 				str += this.component.js.code;
-				// TODO map
+				
+				if (this.component.js.map) {
+					str += this.component.js.map;
+				}
 			},
 			
 			name: () => {
