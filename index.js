@@ -1,5 +1,5 @@
 let Page = require("./src/Page");
-let Template = require("./Template");
+let Template = require("./src/Template");
 let fs = require("flowfs");
 let chokidar = require("chokidar");
 
