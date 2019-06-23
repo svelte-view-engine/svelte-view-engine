@@ -54,6 +54,8 @@ module.exports = class {
 		let matches = str.match(placeholderRe);
 		let otherParts = str.split(placeholderRe);
 		
+		this.sections = [];
+		
 		for (let i = 0; i < otherParts.length; i++) {
 			this.sections.push({
 				type: "raw",

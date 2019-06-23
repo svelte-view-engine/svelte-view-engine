@@ -13,12 +13,29 @@ module.exports = (opts) => {
 		svelte: {
 			dev,
 		},
+		excludeLocals: [
+			"_locals",
+			"settings",
+			"cache",
+		],
 	}, opts);
+	
+	if (opts.excludeLocals) {
+		options.excludeLocals = opts.excludeLocals;
+	}
 	
 	let pages = {};
 	let template = new Template(options.template, options);
 	
 	return async (path, locals, callback) => {
+		let sendLocals = {};
+		
+		for (let p in locals) {
+			if (!options.excludeLocals.includes(p)) {
+				sendLocals[p] = locals[p];
+			}
+		}
+		
 		if (!pages[path]) {
 			pages[path] = new Page(template, path, options);
 		}

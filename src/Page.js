@@ -59,7 +59,7 @@ module.exports = class {
 		
 		let str = "";
 		
-		this.template.render({
+		await this.template.render({
 			raw: (content) => {
 				str += content;
 			},
