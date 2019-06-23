@@ -49,12 +49,12 @@ module.exports = class {
 	
 	async load() {
 		let str = await fs(this.path).read();
-		let placeholderRe = /\$\{(\w+)\}/g;
+		let placeholderRe = /\$\{\w+\}/g;
 		
 		let matches = str.match(placeholderRe);
 		let otherParts = str.split(placeholderRe);
 		
-		for (let i = 0; i < otherParts.length; ) {
+		for (let i = 0; i < otherParts.length; i++) {
 			this.sections.push({
 				type: "raw",
 				content: otherParts[i],
@@ -64,7 +64,7 @@ module.exports = class {
 			
 			if (placeholder) {
 				this.sections.push({
-					type: placeholder,
+					type: placeholder.replace(/[${}]/g, ""),
 				});
 			}
 		}
@@ -78,11 +78,11 @@ module.exports = class {
 		}
 		
 		for (let section of this.sections) {
-			if (section.type === "raw") {
-				fns[section.type](section.content);
-			} else {
-				fns[section.type]();
+			if (!(section.type in fns)) {
+				throw new Error(`Template - no render function defined for placeholder '${section.type}'`);
 			}
+			
+			fns[section.type](section.content);
 		}
 	}
 }

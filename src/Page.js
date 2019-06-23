@@ -30,6 +30,7 @@ module.exports = class {
 	
 	async build() {
 		this.component = await buildComponent(this.path);
+		this.ready = true;
 	}
 	
 	async render(locals) {
@@ -40,30 +41,34 @@ module.exports = class {
 		let str = "";
 		
 		this.template.render({
-			raw(content) {
+			raw: (content) => {
 				str += content;
 			},
 			
-			head() {
+			head: () => {
 				str += this.component.head;
 			},
 			
-			html() {
+			html: () => {
 				str += this.component.html;
 			},
 			
-			css() {
+			css: () => {
 				str += this.component.css.code;
 				// TODO map
 			},
 			
-			js() {
+			js: () => {
 				str += this.component.js.code;
 				// TODO map
 			},
 			
-			name() {
+			name: () => {
 				str += this.name;
+			},
+			
+			locals: () => {
+				str += JSON.stringify(locals);
 			},
 		});
 		

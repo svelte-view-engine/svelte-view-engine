@@ -1,10 +1,10 @@
-let getSsrComponent = require("./getSsrComponent");
-let getDomComponent = require("./getDomComponent");
+let buildSsrComponent = require("./buildSsrComponent");
+let buildDomComponent = require("./buildDomComponent");
 
 module.exports = async (path) => {
-	let Component = await getSsrComponent(path);
+	let Component = await buildSsrComponent(path);
 	let {head, html, css} = Component.render();
-	let js = await getDomComponent(path);
+	let js = await buildDomComponent(path);
 	
 	return {
 		head,
