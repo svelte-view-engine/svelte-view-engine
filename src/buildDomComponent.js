@@ -51,5 +51,8 @@ module.exports = async (path) => {
 	
 	let {output} = await bundle.generate(outputOptions);
 	
-	return output[0];
+	return {
+		js: output[0],
+		watchFiles: bundle.watchFiles,
+	};
 }

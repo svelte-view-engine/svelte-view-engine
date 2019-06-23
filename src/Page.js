@@ -18,6 +18,7 @@ module.exports = class {
 		this.path = path;
 		this.name = fs(path).basename;
 		this.ready = false;
+		this.pendingBuild = null;
 		
 		if (watch) {
 			chokidar.watch(path).on("change", () => {
@@ -28,8 +29,23 @@ module.exports = class {
 		this.build();
 	}
 	
-	async build() {
+	async _build() {
 		this.component = await buildComponent(this.path);
+	}
+	
+	async build() {
+		if (!this.pendingBuild) {
+			this.pendingBuild = this._build();
+		}
+		
+		await this.pendingBuild;
+		
+		if (this.watcher) {
+			this.watcher.close();
+		}
+		
+		this.watcher = chokidar.watch(this.component.watchFiles);
+		this.pendingBuild = null;
 		this.ready = true;
 	}
 	
