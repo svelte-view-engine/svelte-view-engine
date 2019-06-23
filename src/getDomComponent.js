@@ -51,5 +51,5 @@ module.exports = async (path) => {
 	
 	let {output} = await bundle.generate(outputOptions);
 	
-	return output[0].code;
+	return output[0];
 }
