@@ -6,8 +6,6 @@ module.exports = (options) => {
 	let template = new Template(options.template, options.watch);
 	
 	return async (path, locals, callback) => {
-		console.log(path);
-		
 		if (!pages[path]) {
 			pages[path] = new Page(template, path, options.watch);
 		}
