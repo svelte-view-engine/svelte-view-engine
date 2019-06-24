@@ -28,20 +28,20 @@ app.get("/", (req, res) => {
 Design
 ------
 
-Svelte-render is designed to be as minimal and flexible as possible, so it is a view engine (like Pug or EJS) as opposed to an app framework (like [Sapper](https://sapper.svelte.dev) or [Next.js](https://nextjs.org)), but it also wires everything up so that you can just start writing .svelte files and serving them as views.
+Svelte-render is designed to be as minimal and flexible as possible, so it is a view engine (like Pug or EJS) as opposed to an app framework (like [Sapper](https://sapper.svelte.dev) or [Next.js](https://nextjs.org)).
 
-Components are compiled on the fly (using [rollup-plugin-svelte](https://github.com/sveltejs/rollup-plugin-svelte)), so there are no compiled component files stored anywhere.
+Components are compiled on the fly (using [rollup-plugin-svelte](https://github.com/sveltejs/rollup-plugin-svelte)).
 
-Component JS and CSS are delivered inline and everything is stored directly in memory once compiled, so serving a page requires no I/O and has very little processing overhead.
+Component JS and CSS are delivered inline and the whole thing is stored directly in memory once compiled, so serving a page requires no I/O and has negligible processing overhead.
 
 You can watch component files and their dependencies for auto-rebuilding in development.
 
 Root template
 -------------
 
-Svelte components and `<slot>`s take the place of, for example, Pug layouts and mixins for all your re-use and composition needs, but pages still need a bit of surrounding boilerplate HTML that you can't define in Svelte -- `<!doctype>`, `<html></html>` etc -- and you also need a few lines of JS to actually instantiate the component.
+Svelte components and `<slot>`s take the place of, for example, Pug layouts and mixins for all your re-use and composition needs, but pages still need a bit of surrounding boilerplate HTML that you can't define in Svelte -- `<!doctype>`, `<html>` etc -- and you also need a few lines of JS to actually instantiate the component.
 
-To define these, you pass a single "root template" to be used for all pages.  This file uses placeholders for all the relevant data from the Svelte component being rendered:
+To define these, you pass a single "root template" to be used for all pages.  This file uses placeholders for the different elements of the Svelte component being rendered:
 
 ```html
 // template.html
