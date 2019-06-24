@@ -8,9 +8,9 @@ it uses a simple template language with the following replacements:
 
 ${head} - svelte:head markup from SSR
 ${html} - component markup from SSR
-${css} - component CSS {code, map}
+${css} - component CSS
 ${js} - component JS as "var ${name} = function..."
-${name} - the component name used in the var declaration above, e.g. Page
+${name} - the component name used in the var declaration above
 ${locals} - a JSON-stringified object of props to render
 
 the Pages call the Template to render themselves, passing in methods to handle

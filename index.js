@@ -40,6 +40,10 @@ module.exports = (opts) => {
 			pages[path] = new Page(template, path, options);
 		}
 		
-		callback(null, await pages[path].render(sendLocals));
+		try {
+			callback(null, await pages[path].render(sendLocals));
+		} catch (e) {
+			callback(e);
+		}
 	}
 }

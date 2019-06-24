@@ -34,14 +34,14 @@ Components are compiled on the fly (using [rollup-plugin-svelte](https://github.
 
 Component JS and CSS are delivered inline and everything is stored directly in memory once compiled, so serving a page requires no I/O and has very little processing overhead.
 
-Svelte-render can watch component files and their dependencies for auto-rebuilding in development.
+You can watch component files and their dependencies for auto-rebuilding in development.
 
-Root templates
---------------
+Root template
+-------------
 
 Svelte components and `<slot>`s take the place of, for example, Pug layouts and mixins for all your re-use and composition needs, but pages still need a bit of surrounding boilerplate HTML that you can't define in Svelte -- `<!doctype>`, `<html></html>` etc -- and you also need a few lines of JS to actually instantiate the component.
 
-To define these, you pass a single "root template" to be used for all pages.  This file uses placeholders for all the relevant data from the Svelte component being rendered, for example:
+To define these, you pass a single "root template" to be used for all pages.  This file uses placeholders for all the relevant data from the Svelte component being rendered:
 
 ```html
 // template.html
@@ -60,8 +60,6 @@ To define these, you pass a single "root template" to be used for all pages.  Th
 			${js}
 		</script>
 		<script>
-			var payload = ${locals};
-			
 			new ${name}({
 				target: document.body,
 				props: ${locals},
@@ -76,5 +74,5 @@ To define these, you pass a single "root template" to be used for all pages.  Th
 - `css` is the CSS
 - `html` is the SSR-rendered component markup
 - `js` is the component code as an IIFE
-- `name` is the basename of the .svelte file, and is used as the client-side Svelte class name
+- `name` is the basename of the .svelte file, and is used as the client-side component class name
 - `locals` is a JSON-stringified version of the object you pass to `res.render()`
