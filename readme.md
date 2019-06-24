@@ -80,22 +80,6 @@ To define these, you pass a single "root template" to be used for all pages.  Th
 Options
 -------
 
-	let options = merge({
-		template: null,
-		watch: dev,
-		liveReload: dev,
-		minify: !dev,
-		useLocalsForSsr: false,
-		svelte: {
-			dev,
-		},
-		excludeLocals: [
-			"_locals",
-			"settings",
-			"cache",
-		],
-	}, opts);
-
 `template`: Path to root template file
 
 `watch`: Watch component files and dependencies and auto-rebuild (defaults to `process.env.NODE_ENV !== "production"`)
