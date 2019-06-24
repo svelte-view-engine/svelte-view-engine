@@ -10,7 +10,7 @@ let merge = require("lodash.merge");
 /*
 input: path to a .svelte file
 
-output: client-side Svelte component bundle as a string of JS in IIFE format,
+output: client-side Svelte component bundle as a string of JS in IIFE format;
 and an array of files to watch for changes
 */
 

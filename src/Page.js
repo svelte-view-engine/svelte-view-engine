@@ -9,8 +9,6 @@ for changes.
 
 the render() method returns a string containing the complete HTML for the page,
 which can be passed directly back to express.
-
-TODO use Buffers or Streams if Express supports them, instead of strings
 */
 
 module.exports = class {
@@ -62,13 +60,11 @@ module.exports = class {
 			await this.build();
 		}
 		
-		let head, html, css;
-		
-		if (this.options.useLocalsForSsr) {
-			{head, html, css} = this.ServerComponent.render(locals);
-		} else {
-			{head, html, css} = this.prerenderedServerComponent;
-		}
+		let {head, html, css} = (
+			this.options.useLocalsForSsr
+			? this.ServerComponent.render(locals)
+			: this.prerenderedServerComponent
+		);
 		
 		let {js} = this.clientComponent;
 		
@@ -81,6 +77,10 @@ module.exports = class {
 			
 			head: () => {
 				str += head;
+				
+				if (this.options.liveReload) {
+					str += `\n<script src="http://livejs.com/live.js"></script>`;
+				}
 			},
 			
 			html: () => {
