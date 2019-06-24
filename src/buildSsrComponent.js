@@ -5,6 +5,7 @@ let commonjs = require("rollup-plugin-commonjs");
 let {terser} = require("rollup-plugin-terser");
 let requireFromString = require("require-from-string");
 let merge = require("lodash.merge");
+let requireFromString = require("./requireFromString");
 
 /*
 input: path to a .svelte file
@@ -50,5 +51,8 @@ module.exports = async (path, options) => {
 	
 	let {output} = await bundle.generate(outputOptions);
 	
-	return requireFromString(output[0].code);
+	
+	console.log("AFTER ROLLUP SSR");
+	
+	return await requireFromString(output[0].code);
 }
