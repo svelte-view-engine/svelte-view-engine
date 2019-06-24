@@ -80,16 +80,19 @@ To define these, you pass a single "root template" to be used for all pages.  Th
 Options
 -------
 
+**dev** = `process.env.NODE_ENV !== "production"`
+**prod** = `process.env.NODE_ENV === "production"`
+
 `template`: Path to root template file
 
-`watch`: Watch component files and dependencies and auto-rebuild (defaults to `process.env.NODE_ENV !== "production"`)
+`watch`: Watch component files and dependencies and auto-rebuild (defaults to **dev**)
 
-`liveReload`: Auto reload the browser when component rebuilds (defaults to `process.env.NODE_ENV !== "production"`) (TODO implement this)
+`liveReload`: Auto reload the browser when component rebuilds (defaults to **dev**) (TODO implement this)
 
-`minify`: Use [rollup-plugin-terser](https://github.com/TrySound/rollup-plugin-terser) to minify CSS and JS (defaults to `process.env.NODE_ENV === "production"`)
+`minify`: Use [rollup-plugin-terser](https://github.com/TrySound/rollup-plugin-terser) to minify CSS and JS (defaults to **prod**)
 
 `useLocalsForSsr`: `true` to perform server-side rendering on every request, with the supplied locals.  `false` to perform server-side rendering once, at build time, and cache the results until the next rebuild (defaults to `false`)
 
-`svelte`: Options to pass to [rollup-plugin-svelte](https://github.com/sveltejs/rollup-plugin-svelte).  This starts as `{dev: process.env.NODE_ENV !== "production"}` and is deep-merged with the supplied options.
+`svelte`: Options to pass to [rollup-plugin-svelte](https://github.com/sveltejs/rollup-plugin-svelte).  This starts as `{dev: `**dev**`}` and is deep-merged with the supplied options.
 
 `excludeLocals`: Array of object keys to exclude from the locals that get passed to the component.  Some keys are added by Express, and may be unnecessary and/or security concerns if exposed.  This defaults to `["_locals", "settings", "cache"]` and is overwritten entirely (not deep-merged) with the supplied setting.
