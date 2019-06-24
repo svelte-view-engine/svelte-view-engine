@@ -86,7 +86,7 @@ Options
 
 `liveReload`: Auto reload the browser when component rebuilds (defaults to `process.env.NODE_ENV !== "production"`) (TODO implement this)
 
-`minify`: Use [rollup-plugin-terser]() to minify CSS and JS (defaults to `process.env.NODE_ENV === "production"`)
+`minify`: Use [rollup-plugin-terser](https://github.com/TrySound/rollup-plugin-terser) to minify CSS and JS (defaults to `process.env.NODE_ENV === "production"`)
 
 `useLocalsForSsr`: `true` to perform server-side rendering on every request, with the supplied locals.  `false` to perform server-side rendering once, at build time, and cache the results until the next rebuild (defaults to `false`)
 
