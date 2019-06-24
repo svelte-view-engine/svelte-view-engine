@@ -51,8 +51,5 @@ module.exports = async (path, options) => {
 	
 	let {output} = await bundle.generate(outputOptions);
 	
-	
-	console.log("AFTER ROLLUP SSR");
-	
 	return await requireFromString(output[0].code);
 }
