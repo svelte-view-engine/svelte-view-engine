@@ -30,7 +30,7 @@ Design
 
 Svelte-render is designed to be as minimal and flexible as possible, so it is a view engine (like Pug or EJS) as opposed to an app framework (like [Sapper](https://sapper.svelte.dev) or [Next.js](https://nextjs.org)).
 
-Components are compiled on the fly (using [rollup-plugin-svelte](https://github.com/sveltejs/rollup-plugin-svelte)).
+Components are compiled on the fly using [rollup-plugin-svelte](https://github.com/sveltejs/rollup-plugin-svelte).
 
 Component JS and CSS are delivered inline and the whole thing is stored directly in memory once compiled, so serving a page requires no I/O.  SSR can optionally be done every time (for SEO and efficient hydration on the client) or once at build time (with empty locals) for even less per-request overhead on the server.
 
@@ -80,18 +80,18 @@ To define these, you pass a single "root template" to be used for all pages.  Th
 Options
 -------
 
-**dev** = `process.env.NODE_ENV !== "production"`<br>
-**prod** = `process.env.NODE_ENV === "production"`
+`dev` = `process.env.NODE_ENV !== "production"`<br>
+`prod` = `process.env.NODE_ENV === "production"`
 
-`template`: Path to root template file
+`template`: Path to root template file.
 
-`watch`: Watch component files and dependencies and auto-rebuild (defaults to dev)
+`watch`: Watch component files and dependencies and auto-rebuild (defaults to `dev`).
 
-`liveReload`: Auto reload the browser when component rebuilds (defaults to dev) (TODO implement this)
+`liveReload`: Auto reload the browser when component rebuilds (defaults to `dev`). (TODO implement this)
 
-`minify`: Use [rollup-plugin-terser](https://github.com/TrySound/rollup-plugin-terser) to minify CSS and JS (defaults to prod)
+`minify`: Use [rollup-plugin-terser](https://github.com/TrySound/rollup-plugin-terser) to minify CSS and JS (defaults to `prod`).
 
-`useLocalsForSsr`: `true` to perform server-side rendering on every request, with the supplied locals.  `false` to perform server-side rendering once, at build time, and cache the results until the next rebuild (defaults to `false`)
+`useLocalsForSsr`: `true` to perform server-side rendering on every request, with the supplied locals.  `false` to perform server-side rendering once, at build time, and cache the results until the next rebuild (defaults to `false`).
 
 `svelte`: Options to pass to [rollup-plugin-svelte](https://github.com/sveltejs/rollup-plugin-svelte).  This starts as `{dev: dev}` and is deep-merged with the supplied options.
 
