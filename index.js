@@ -10,6 +10,7 @@ module.exports = (opts) => {
 		watch: dev,
 		liveReload: dev,
 		minify: !dev,
+		useLocalsForSsr: false,
 		svelte: {
 			dev,
 		},

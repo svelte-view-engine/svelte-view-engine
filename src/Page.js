@@ -1,4 +1,5 @@
-let buildComponent = require("./buildComponent");
+let buildSsrComponent = require("./buildSsrComponent");
+let buildDomComponent = require("./buildDomComponent");
 let chokidar = require("chokidar");
 let fs = require("flowfs");
 
@@ -25,7 +26,8 @@ module.exports = class {
 	}
 	
 	async _build() {
-		this.component = await buildComponent(this.path, this.options);
+		this.ServerComponent = await buildSsrComponent(this.path, this.options);
+		this.clientComponent = await buildDomComponent(this.path, this.options);
 	}
 	
 	async build() {
@@ -40,13 +42,16 @@ module.exports = class {
 				this.watcher.close();
 			}
 			
-			this.watcher = chokidar.watch(this.component.watchFiles);
+			this.watcher = chokidar.watch(this.clientComponent.watchFiles);
 			
 			this.watcher.on("change", () => {
 				this.ready = false;
 			});
 		}
 		
+		if (!this.options.useLocalsForSsr) {
+			this.prerenderedServerComponent = this.ServerComponent.render();
+		}
 		
 		this.pendingBuild = null;
 		this.ready = true;
@@ -57,6 +62,16 @@ module.exports = class {
 			await this.build();
 		}
 		
+		let head, html, css;
+		
+		if (this.options.useLocalsForSsr) {
+			{head, html, css} = this.ServerComponent.render(locals);
+		} else {
+			{head, html, css} = this.prerenderedServerComponent;
+		}
+		
+		let {js} = this.clientComponent;
+		
 		let str = "";
 		
 		await this.template.render({
@@ -65,26 +80,26 @@ module.exports = class {
 			},
 			
 			head: () => {
-				str += this.component.head;
+				str += head;
 			},
 			
 			html: () => {
-				str += this.component.html;
+				str += html;
 			},
 			
 			css: () => {
-				str += this.component.css.code;
+				str += css.code;
 				
-				if (this.component.css.map) {
-					str += this.component.css.map;
+				if (css.map) {
+					str += css.map;
 				}
 			},
 			
 			js: () => {
-				str += this.component.js.code;
+				str += js.code;
 				
-				if (this.component.js.map) {
-					str += this.component.js.map;
+				if (js.map) {
+					str += js.map;
 				}
 			},
 			

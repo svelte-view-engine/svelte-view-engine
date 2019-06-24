@@ -32,7 +32,7 @@ Svelte-render is designed to be as minimal and flexible as possible, so it is a 
 
 Components are compiled on the fly (using [rollup-plugin-svelte](https://github.com/sveltejs/rollup-plugin-svelte)).
 
-Component JS and CSS are delivered inline and the whole thing is stored directly in memory once compiled, so serving a page requires no I/O and has negligible processing overhead.
+Component JS and CSS are delivered inline and the whole thing is stored directly in memory once compiled, so serving a page requires no I/O.  SSR can optionally be done every time (for SEO and efficient hydration on the client) or once at build time (with empty locals) for even less per-request processing overhead on the server.
 
 You can watch component files and their dependencies for auto-rebuilding in development.
 
