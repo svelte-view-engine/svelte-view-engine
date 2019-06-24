@@ -80,8 +80,7 @@ To define these, you pass a single "root template" to be used for all pages.  Th
 Options
 -------
 
-**dev** = `process.env.NODE_ENV !== "production"`
-
+**dev** = `process.env.NODE_ENV !== "production"`<br>
 **prod** = `process.env.NODE_ENV === "production"`
 
 `template`: Path to root template file
