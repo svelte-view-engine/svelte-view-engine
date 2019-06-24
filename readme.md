@@ -25,21 +25,21 @@ app.get("/", (req, res) => {
 });
 ```
 
-Design goals
-------------
+Design
+------
 
-Svelte-render is designed to be as minimal and flexible as possible, so it is a view engine (like Pug or EJS) as opposed to an app framework (like Sapper), but it also wires everything up so that you can just start writing .svelte files and serving them as views.
+Svelte-render is designed to be as minimal and flexible as possible, so it is a view engine (like Pug or EJS) as opposed to an app framework (like [Sapper](https://sapper.svelte.dev) or [Next.js](https://nextjs.org)), but it also wires everything up so that you can just start writing .svelte files and serving them as views.
 
 Components are compiled on the fly (using [rollup-plugin-svelte](https://github.com/sveltejs/rollup-plugin-svelte)), so there are no compiled component files stored anywhere.
 
-Component JS and CSS are delivered inline in the HTML.  Everything is stored directly in memory, so once the pages are compiled, serving them has no I/O and very little processing overhead.
+Component JS and CSS are delivered inline and everything is stored directly in memory once compiled, so serving a page requires no I/O and has very little processing overhead.
 
-Svelte-render can watch component files (including dependencies) and rebuild automatically for development.
+Svelte-render can watch component files and their dependencies for auto-rebuilding in development.
 
 Root templates
 --------------
 
-Svelte components and `<slot>`s take the place of, for example, Pug layouts and mixins for all your re-use and composition needs; but pages still need a bit of surrounding boilerplate HTML that you can't define in Svelte -- `<!doctype>`, `<html></html>` etc -- and you also need a few lines of JS to actually instantiate the component.
+Svelte components and `<slot>`s take the place of, for example, Pug layouts and mixins for all your re-use and composition needs, but pages still need a bit of surrounding boilerplate HTML that you can't define in Svelte -- `<!doctype>`, `<html></html>` etc -- and you also need a few lines of JS to actually instantiate the component.
 
 To define these, you pass a single "root template" to be used for all pages.  This file uses placeholders for all the relevant data from the Svelte component being rendered, for example:
 
@@ -71,3 +71,10 @@ To define these, you pass a single "root template" to be used for all pages.  Th
 	</body>
 </html>
 ```
+
+- `head` is the SSR-rendered markup from any `<svelte:head>` tags
+- `css` is the CSS
+- `html` is the SSR-rendered component markup
+- `js` is the component code as an IIFE
+- `name` is the basename of the .svelte file, and is used as the client-side Svelte class name
+- `locals` is a JSON-stringified version of the object you pass to `res.render()`
