@@ -81,6 +81,7 @@ Options
 -------
 
 **dev** = `process.env.NODE_ENV !== "production"`
+
 **prod** = `process.env.NODE_ENV === "production"`
 
 `template`: Path to root template file
