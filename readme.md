@@ -28,7 +28,7 @@ app.get("/", (req, res) => {
 Design goals
 ------------
 
-Svelte-render is designed to be as minimal and flexible as possible, so it is a view engine (like Pug or EJS) as opposed to an app framework (like Sapper) -- but it also wires everything up so that you can just start writing .svelte files and serving them as views.
+Svelte-render is designed to be as minimal and flexible as possible, so it is a view engine (like Pug or EJS) as opposed to an app framework (like Sapper), but it also wires everything up so that you can just start writing .svelte files and serving them as views.
 
 Components are compiled on the fly (using [rollup-plugin-svelte](https://github.com/sveltejs/rollup-plugin-svelte)), so there are no compiled component files stored anywhere.
 
