@@ -13,6 +13,8 @@ ${js} - component JS as "var ${name} = function..."
 ${name} - the component name used in the var declaration above
 ${locals} - a JSON-stringified object of props to render
 
+You can also ${include files/relative/to/the/template}
+
 the Pages call the Template to render themselves, passing in methods to handle
 each placeholder and also raw() to handle the non-placeholder sections of the
 template file, e.g. in Page:
@@ -49,7 +51,19 @@ module.exports = class {
 	
 	async load() {
 		let str = await fs(this.path).read();
-		let placeholderRe = /\$\{\w+\}/g;
+		
+		// process include directives first
+		
+		let includeRe = /\$\{\s*include\s+([^\s}]+)\s*\}/;
+		let match;
+		
+		while (match = includeRe.exec(str)) {
+			str = str.replace(includeRe, await fs(this.path).parent.child(match[1]).read());
+		}
+		
+		// then set up placeholder sections
+		
+		let placeholderRe = /\$\{\s*\w+\s*}/g;
 		
 		let matches = str.match(placeholderRe);
 		let otherParts = str.split(placeholderRe);
