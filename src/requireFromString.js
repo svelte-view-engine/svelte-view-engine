@@ -8,7 +8,7 @@ module.exports = async (code) => {
 	
 	let module = require(tmpFile.fullPath);
 	
-	//tmpFile.delete();
+	tmpFile.delete();
 	
 	return module;
 }

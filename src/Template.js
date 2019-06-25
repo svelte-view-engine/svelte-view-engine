@@ -61,7 +61,7 @@ module.exports = class {
 			
 			if (placeholder) {
 				this.sections.push({
-					type: placeholder.replace(/[${}]/g, ""),
+					type: placeholder.replace(/[${}\s]/g, ""),
 				});
 			}
 		}
