@@ -4,34 +4,15 @@ let fs = require("flowfs");
 /*
 this is the root template that's used to render all pages.
 
-it uses a simple template language with the following replacements:
+it uses a simple template language where ${...} placeholder values result in the
+named function from the supplied map of render functions being called, and
+everything else (not inside ${}) results in the .raw function being called with
+the substring.  the Template doesn't actually render anything itself, it just
+calls the functions.
 
-${head} - svelte:head markup from SSR
-${html} - component markup from SSR
-${css} - component CSS
-${js} - component JS as "var ${name} = function..."
-${name} - the component name used in the var declaration above
-${locals} - a JSON-stringified object of props to render
-
-You can also ${include files/relative/to/the/template}
-
-the Pages call the Template to render themselves, passing in methods to handle
-each placeholder and also raw() to handle the non-placeholder sections of the
-template file, e.g. in Page:
-
-render() {
-	this.template.render({
-		head() {
-			res.send(this.head);
-		},
-		
-		raw(content) {
-			res.send(content);
-		},
-		
-		// etc
-	});
-}
+You can also ${include files/relative/to/the/template}.  These include directives
+are processed, with the file contents being inserted in place of the directive,
+prior to any rendering.
 */
 
 module.exports = class {
