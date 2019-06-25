@@ -62,7 +62,7 @@ To define these, you pass a single "root template" to be used for all pages.  Th
 		<script>
 			new ${name}({
 				target: document.body,
-				props: ${locals},
+				props: ${props},
 				hydrate: true,
 			});
 		</script>
@@ -82,7 +82,7 @@ Props/payload
 
 svelte-render/payload exposes a global variable called `props` that makes the view locals available to all components, server-side and client-side.  To use the data client-side, set the `props` variable in your root template (before the `${js}` placeholder):
 
-```
+```html
 ...
 
 <script>
@@ -96,6 +96,16 @@ new ${name}({
 </script>
 
 ...
+```
+
+You can use it in your components like so:
+
+```html
+<script>
+import payload from "svelte-render/payload";
+
+let data = payload.get();
+</script>
 ```
 
 Options
