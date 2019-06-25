@@ -75,7 +75,28 @@ To define these, you pass a single "root template" to be used for all pages.  Th
 - `html` is the SSR-rendered component markup
 - `js` is the component code as an IIFE
 - `name` is the basename of the .svelte file, and is used as the client-side component class name
-- `locals` is a JSON-stringified version of the object you pass to `res.render()`
+- `props` is a JSON-stringified version of the object you pass to `res.render()`
+
+Props/payload
+-------------
+
+svelte-render/payload exposes a global variable called `props` that makes the view locals available to all components, server-side and client-side.  To use the data client-side, set the `props` variable in your root template (before the `${js}` placeholder):
+
+```
+...
+
+<script>
+props = ${props};
+
+${js}
+
+new ${name}({
+	...
+});
+</script>
+
+...
+```
 
 Options
 -------
