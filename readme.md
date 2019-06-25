@@ -108,14 +108,6 @@ You can use it in your components like so:
 </script>
 ```
 
-### Why use a global variable?
-
-Obviously I considered a couple of other options before deciding to use a global, but in the end it turned out to be a nice escape hatch for something that would otherwise have been difficult and time-consuming to implement, and would have added a fair bit of extra complexity.
-
-The reason is that the build process for svelte server-side components bundles up the dependencies into the component file the same way it's done for the client.  Also, in Svelte, stores are JavaScript modules, and they're not "passed in" to components, the component has to `import` them.
-
-This prevents you from putting any dynamic or per-request data (from a database or a session, for example) into the actual store instance that the component is using -- everything you want available would have to be hard-coded into the module.  A module-local variable wouldn't work, because the server-side component is using its bundled version of the module code, not the actual module.  The situation on the client-side is similar; you can't really get Svelte code and general JS to talk to each other through the usual channels.
-
 Options
 -------
 
