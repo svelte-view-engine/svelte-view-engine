@@ -47,13 +47,13 @@ module.exports = async (path, options, cache) => {
 		format: "cjs",
 	};
 	
-	let t = new Date().valueOf();
+	//let t = new Date().valueOf();
 	let bundle = await rollup.rollup(inputOptions);
-	console.log("ssr " + (new Date().valueOf() - t));
+	//console.log("ssr " + (new Date().valueOf() - t));
 	
-	t = new Date().valueOf();
+	//t = new Date().valueOf();
 	let {output} = await bundle.generate(outputOptions);
-	console.log("ssr " + (new Date().valueOf() - t));
+	//console.log("ssr " + (new Date().valueOf() - t));
 	
 	return {
 		cache: bundle.cache,

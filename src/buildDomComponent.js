@@ -38,13 +38,13 @@ module.exports = async (path, options, cache) => {
 		name: fs(path).basename,
 	};
 	
-	let t = new Date().valueOf();
+	//let t = new Date().valueOf();
 	let bundle = await rollup.rollup(inputOptions);
-	console.log("dom " + (new Date().valueOf() - t));
+	//console.log("dom " + (new Date().valueOf() - t));
 	
-	t = new Date().valueOf();
+	//t = new Date().valueOf();
 	let {output} = await bundle.generate(outputOptions);
-	console.log("dom " + (new Date().valueOf() - t));
+	//console.log("dom " + (new Date().valueOf() - t));
 	
 	return {
 		cache: bundle.cache,
