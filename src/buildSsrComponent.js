@@ -4,7 +4,7 @@ let resolve = require("rollup-plugin-node-resolve");
 let commonjs = require("rollup-plugin-commonjs");
 let {terser} = require("rollup-plugin-terser");
 let merge = require("lodash.merge");
-let requireFromString = require("./requireFromString");
+let requireFromString = require("./utils/requireFromString");
 
 /*
 input: path to a .svelte file

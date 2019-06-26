@@ -3,6 +3,7 @@ let fs = require("flowfs");
 let buildSsrComponent = require("./buildSsrComponent");
 let buildDomComponent = require("./buildDomComponent");
 let payload = require("./payload");
+let validIdentifier = require("./utils/validIdentifier");
 
 /*
 this represents a component.  it caches the build artifacts and watches
@@ -26,7 +27,7 @@ module.exports = class {
 		this.template = template;
 		this.path = path;
 		this.options = options;
-		this.name = fs(path).basename;
+		this.name = validIdentifier(fs(path).basename);
 		this.ready = false;
 		this.pendingBuild = null;
 		this.cachedBundles = {};
@@ -36,7 +37,7 @@ module.exports = class {
 	
 	async _build() {
 		this.serverComponent = await buildSsrComponent(this.path, this.options, this.cachedBundles.server);
-		this.clientComponent = await buildDomComponent(this.path, this.options, this.cachedBundles.client);
+		this.clientComponent = await buildDomComponent(this.path, this.name, this.options, this.cachedBundles.client);
 		this.cachedBundles.server = this.serverComponent.cache;
 		this.cachedBundles.client = this.clientComponent.cache;
 	}

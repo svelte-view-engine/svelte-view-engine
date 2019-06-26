@@ -14,7 +14,7 @@ output: client-side Svelte component bundle as a string of JS in IIFE format;
 and an array of files to watch for changes
 */
 
-module.exports = async (path, options, cache) => {
+module.exports = async (path, name, options, cache) => {
 	let inputOptions = {
 		input: path,
 		cache,
@@ -35,7 +35,7 @@ module.exports = async (path, options, cache) => {
 	
 	let outputOptions = {
 		format: "iife",
-		name: fs(path).basename,
+		name,
 	};
 	
 	let bundle = await rollup.rollup(inputOptions);
