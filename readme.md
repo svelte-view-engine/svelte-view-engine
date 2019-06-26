@@ -118,7 +118,7 @@ Options
 
 `watch`: Watch component files and dependencies and auto-rebuild (defaults to `dev`).
 
-`liveReload`: Auto reload the browser when component rebuilds (defaults to `dev`).  (NOTE this currently uses a <script> tag pointing at http://livejs.com/live.js)
+`liveReload`: Auto reload the browser when component rebuilds (defaults to `dev`).  (**Note** this currently uses a script tag pointing at http://livejs.com/live.js)
 
 `minify`: Use [rollup-plugin-terser](https://github.com/TrySound/rollup-plugin-terser) to minify CSS and JS (defaults to `prod`).
 

@@ -1,6 +1,6 @@
 {
 	"name": "svelte-render",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"dependencies": {
 		"chokidar": "^3.0.1",
 		"flowfs": "gushogg-blake/flowfs#master",
