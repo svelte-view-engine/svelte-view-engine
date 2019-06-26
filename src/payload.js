@@ -1,12 +1,9 @@
 /*
-Payload - per-request globals that are available to all Svelte components,
+Payload - per-request data that's available to all Svelte components,
 both clientside and serverside.
 
-Svelte stores can't be used because they are global to the entire JS environment,
-so users would see each other's values.
-
 the value is set in Page.render() for serverside, and by top-level JS for
-clientside (var props = ...)
+clientside (props = ...)
 */
 
 let g = typeof window !== "undefined" ? window : global;
