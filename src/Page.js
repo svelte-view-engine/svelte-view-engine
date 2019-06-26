@@ -60,10 +60,6 @@ module.exports = class {
 			});
 		}
 		
-		if (!this.options.useLocalsForSsr) {
-			this.prerenderedServerComponent = this.serverComponent.component.render();
-		}
-		
 		this.pendingBuild = null;
 		this.ready = true;
 	}
@@ -80,11 +76,7 @@ module.exports = class {
 		
 		payload.set(locals);
 		
-		let {head, html, css} = (
-			this.options.useLocalsForSsr
-			? this.serverComponent.component.render(locals)
-			: this.prerenderedServerComponent
-		);
+		let {head, html, css} = this.serverComponent.component.render(locals);
 		
 		payload.set(null);
 		
