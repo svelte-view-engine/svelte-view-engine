@@ -29,14 +29,16 @@ module.exports = class {
 		this.name = fs(path).basename;
 		this.ready = false;
 		this.pendingBuild = null;
+		this.cachedBundles = {};
 		
 		this.build();
 	}
 	
 	async _build() {
-		this.ServerComponent = await buildSsrComponent(this.path, this.options);
-		this.clientComponent = await buildDomComponent(this.path, this.options);
-		console.log("finished build");
+		this.serverComponent = await buildSsrComponent(this.path, this.options, this.cachedBundles.server);
+		this.clientComponent = await buildDomComponent(this.path, this.options, this.cachedBundles.client);
+		this.cachedBundles.server = this.serverComponent.cache;
+		this.cachedBundles.client = this.clientComponent.cache;
 	}
 	
 	async build() {
@@ -59,7 +61,7 @@ module.exports = class {
 		}
 		
 		if (!this.options.useLocalsForSsr) {
-			this.prerenderedServerComponent = this.ServerComponent.render();
+			this.prerenderedServerComponent = this.serverComponent.component.render();
 		}
 		
 		this.pendingBuild = null;
@@ -80,7 +82,7 @@ module.exports = class {
 		
 		let {head, html, css} = (
 			this.options.useLocalsForSsr
-			? this.ServerComponent.render(locals)
+			? this.serverComponent.component.render(locals)
 			: this.prerenderedServerComponent
 		);
 		

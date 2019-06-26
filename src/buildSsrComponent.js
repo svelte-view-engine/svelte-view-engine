@@ -24,9 +24,10 @@ The SSR module is an object with a render method, which takes props and returns
 }
 */
 
-module.exports = async (path, options) => {
+module.exports = async (path, options, cache) => {
 	let inputOptions = {
 		input: path,
+		cache,
 		plugins: [
 			svelte(merge({
 				generate: "ssr",
@@ -46,9 +47,16 @@ module.exports = async (path, options) => {
 		format: "cjs",
 	};
 	
+	let t = new Date().valueOf();
 	let bundle = await rollup.rollup(inputOptions);
+	console.log("ssr " + (new Date().valueOf() - t));
 	
+	t = new Date().valueOf();
 	let {output} = await bundle.generate(outputOptions);
+	console.log("ssr " + (new Date().valueOf() - t));
 	
-	return await requireFromString(output[0].code);
+	return {
+		cache: bundle.cache,
+		component: await requireFromString(output[0].code),
+	};
 }
