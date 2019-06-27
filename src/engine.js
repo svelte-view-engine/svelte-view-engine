@@ -52,7 +52,6 @@ module.exports = (opts) => {
 			let files = await fs(options.dir).glob("**/*." + options.type);
 			
 			for (let node of files) {
-				console.log("building " + node.path);
 				let page = createPage(node.path);
 				
 				pages[node.path] = page;
