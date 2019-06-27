@@ -9,7 +9,7 @@ module.exports = (opts) => {
 	
 	let options = merge({
 		dir: "./pages",
-		type: "svelte",
+		type: "html",
 		init: true,
 		template: null,
 		watch: dev,

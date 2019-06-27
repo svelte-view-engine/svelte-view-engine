@@ -6,17 +6,23 @@ Svelte-render is a [view engine](https://expressjs.com/en/guide/using-template-e
 ```javascript
 const svelteRender = require("svelte-render");
 
-app.engine("svelte", svelteRender({
+let dir = "./pages";
+let type = "html";
+
+app.engine(type, svelteRender({
 	template: "./template.html", // see Root template below
-	watch: true, // auto-rebuild on changes
-	liveReload: true, // live reloading
+	dir,
+	type,
+	init: true,
+	watch: true,
+	liveReload: true,
 	svelte: {
 		// rollup-plugin-svelte config
 	},
 }));
-
-app.set("views", "./pages");
-app.set("view engine", "svelte");
+	
+app.set("view engine", type);
+app.set("views", dir);
 
 // ...
 
@@ -118,9 +124,9 @@ Options
 
 `template`: Path to root template file.
 
-`dir`: Pages directory (defaults to `"./views"`)
+`dir`: Pages directory (defaults to `"./pages"`).  This should be the same as the "views" option in Express.
 
-`type`: File extension (defaults to `"svelte"`)
+`type`: File extension (defaults to `"html"`).  It's recommended to use a different extension for pages and sub-components, so that svelte-render doesn't unnecessarily create pages for sub-components it finds in the pages directory (e.g. .html for pages and .svelte for sub-components).
 
 `init`: Find all pages (files of `type` in `dir`) and build them on startup (defaults to `true`).  Avoids waiting for initial compilation the first time you request each page.
 
