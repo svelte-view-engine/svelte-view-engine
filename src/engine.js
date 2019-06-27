@@ -1,6 +1,7 @@
 let Page = require("./Page");
 let Template = require("./Template");
 let merge = require("lodash.merge");
+let ws = require("ws");
 
 module.exports = (opts) => {
 	let dev = process.env.NODE_ENV !== "production";
@@ -9,6 +10,12 @@ module.exports = (opts) => {
 		template: null,
 		watch: dev,
 		liveReload: dev,
+		// this will throw an error if the port is in use, so the process
+		// manager (e.g. pm2) will restart until we find an open one
+		// (was gonna use portfinder but it means making all this stuff
+		// async).  if you really want guaranteed unused ports you can
+		// just set the option
+		liveReloadPort: 5000 + Math.floor(Math.random() * 60535),
 		minify: !dev,
 		useLocalsForSsr: false,
 		svelte: {
@@ -25,6 +32,10 @@ module.exports = (opts) => {
 		options.excludeLocals = opts.excludeLocals;
 	}
 	
+	let liveReloadSocket = new ws.Server({
+		port: options.liveReloadPort,
+	});
+	
 	let pages = {};
 	let template = new Template(options.template, options);
 	
@@ -38,7 +49,7 @@ module.exports = (opts) => {
 		}
 		
 		if (!pages[path]) {
-			pages[path] = new Page(template, path, options);
+			pages[path] = new Page(template, path, options, liveReloadSocket);
 		}
 		
 		try {

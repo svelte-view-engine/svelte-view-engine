@@ -23,7 +23,7 @@ ${props} - a JSON-stringified object of props to render
 */
 
 module.exports = class {
-	constructor(template, path, options) {
+	constructor(template, path, options, liveReloadSocket) {
 		this.template = template;
 		this.path = path;
 		this.options = options;
@@ -31,6 +31,7 @@ module.exports = class {
 		this.ready = false;
 		this.pendingBuild = null;
 		this.cachedBundles = {};
+		this.liveReloadSocket = liveReloadSocket;
 		
 		this.build();
 	}
@@ -40,14 +41,6 @@ module.exports = class {
 		this.clientComponent = await buildDomComponent(this.path, this.name, this.options, this.cachedBundles.client);
 		this.cachedBundles.server = this.serverComponent.cache;
 		this.cachedBundles.client = this.clientComponent.cache;
-	}
-	
-	async build() {
-		if (!this.pendingBuild) {
-			this.pendingBuild = this._build();
-		}
-		
-		await this.pendingBuild;
 		
 		if (this.options.watch) {
 			if (this.watcher) {
@@ -58,11 +51,27 @@ module.exports = class {
 			
 			this.watcher.on("change", () => {
 				this.ready = false;
+				this.build();
 			});
 		}
 		
-		this.pendingBuild = null;
+		if (this.options.liveReload) {
+			for (let client of this.liveReloadSocket.clients) {
+				client.send(this.name);
+			}
+		}
+		
 		this.ready = true;
+	}
+	
+	async build() {
+		if (!this.pendingBuild) {
+			this.pendingBuild = this._build();
+		}
+		
+		await this.pendingBuild;
+		
+		this.pendingBuild = null;
 	}
 	
 	async render(locals) {
@@ -95,7 +104,17 @@ module.exports = class {
 				str += head;
 				
 				if (this.options.liveReload) {
-					str += `\n<script src="http://livejs.com/live.js"></script>`;
+					str += `
+						<script>
+							var socket = new WebSocket("ws://" + location.host + ":${this.options.liveReloadPort}");
+							
+							socket.addEventListener("message", function(message) {
+								if (message.data === "${this.name}") {
+									location.reload();
+								}
+							});
+						</script>
+					`;
 				}
 			},
 			
