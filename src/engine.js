@@ -2,11 +2,15 @@ let Page = require("./Page");
 let Template = require("./Template");
 let merge = require("lodash.merge");
 let ws = require("ws");
+let fs = require("flowfs");
 
 module.exports = (opts) => {
 	let dev = process.env.NODE_ENV !== "production";
 	
 	let options = merge({
+		dir: "./pages",
+		type: "svelte",
+		init: true,
 		template: null,
 		watch: dev,
 		liveReload: dev,
@@ -39,6 +43,25 @@ module.exports = (opts) => {
 	let pages = {};
 	let template = new Template(options.template, options);
 	
+	let createPage = (path) => {
+		return new Page(template, path, options, liveReloadSocket);
+	}
+	
+	if (options.init) {
+		(async () => {
+			let files = await fs(options.dir).glob("**/*." + options.type);
+			
+			for (let node of files) {
+				console.log("building " + node.path);
+				let page = createPage(node.path);
+				
+				pages[node.path] = page;
+				
+				page.build();
+			}
+		})();
+	}
+	
 	return async (path, locals, callback) => {
 		let sendLocals = {};
 		
@@ -49,7 +72,7 @@ module.exports = (opts) => {
 		}
 		
 		if (!pages[path]) {
-			pages[path] = new Page(template, path, options, liveReloadSocket);
+			pages[path] = createPage(path);
 		}
 		
 		try {

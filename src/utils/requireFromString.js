@@ -6,7 +6,7 @@ module.exports = async (code) => {
 	
 	await tmpFile.write(code);
 	
-	let module = require(tmpFile.fullPath);
+	let module = require(tmpFile.path);
 	
 	tmpFile.delete();
 	

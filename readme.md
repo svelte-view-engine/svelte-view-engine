@@ -118,6 +118,12 @@ Options
 
 `template`: Path to root template file.
 
+`dir`: Pages directory (defaults to `"./views"`)
+
+`type`: File extension (defaults to `"svelte"`)
+
+`init`: Find all pages (files of `type` in `dir`) and build them on startup (defaults to `true`).  Avoids waiting for initial compilation the first time you request each page.
+
 `watch`: Watch component files and dependencies and auto-rebuild (defaults to `dev`).
 
 `liveReload`: Auto reload the browser when component rebuilds (defaults to `dev`).
