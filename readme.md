@@ -128,7 +128,7 @@ Options
 
 `type`: File extension (defaults to `"html"`).  It's recommended to use a different extension for pages and sub-components, so that svelte-render doesn't unnecessarily create pages for sub-components it finds in the pages directory (e.g. .html for pages and .svelte for sub-components).
 
-`init`: Find all pages (files of `type` in `dir`) and build them on startup (defaults to `true`).  Avoids waiting for initial compilation the first time you request each page.
+`init`: Find all pages (files of `type` in `dir`) and build them on startup (defaults to `true`).  Avoids waiting for initial compilation the first time you request each page.  `dir` and `type` are only used if `init` is on.
 
 `watch`: Watch component files and dependencies and auto-rebuild (defaults to `dev`).
 
