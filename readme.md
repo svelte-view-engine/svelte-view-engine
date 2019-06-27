@@ -40,9 +40,7 @@ The motivation behind svelte-render is to be able to build the view layer of a w
 
 It is therefore a view engine (like Pug or EJS) as opposed to an app framework (like [Sapper](https://sapper.svelte.dev) or [Next.js](https://nextjs.org)).
 
-Components are compiled internally on the fly; there are no separate compiled versions of the modules living in the codebase.
-
-Component files and their dependencies can be watched for automatic rebuilding in development.
+Components are compiled and cached internally on the fly; there are no separate compiled files living in the codebase.
 
 Root template
 -------------
