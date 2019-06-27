@@ -1,8 +1,9 @@
-let os = require("os");
 let fs = require("flowfs");
+let tmp = require("tmp");
+let util = require("util");
 
 module.exports = async (code) => {
-	let tmpFile = fs(os.tmpdir()).child((new Date).valueOf().toString() + Math.random());
+	let tmpFile = fs(await util.promisify(tmp.tmpName)());
 	
 	await tmpFile.write(code);
 	
