@@ -36,7 +36,7 @@ It is therefore a view engine (like Pug or EJS) as opposed to an app framework (
 
 Components are compiled internally on the fly; there are no separate compiled versions of the modules living in the codebase.
 
-Component JS and CSS are delivered inline and the whole thing is stored directly in memory once compiled.
+Component JS and CSS are delivered inline and client-side JS and markup are stored directly in memory once compiled.
 
 Component files and their dependencies can be watched for automatic rebuilding in development.
 
