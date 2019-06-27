@@ -124,11 +124,11 @@ Options
 
 `template`: Path to root template file.
 
-`dir`: Pages directory (defaults to `"./pages"`).  This should be the same as the "views" option in Express.
+`dir` (for use with `init`, see below): Pages directory (defaults to `"./pages"`).  This should be the same as the "views" option in Express.
 
-`type`: File extension (defaults to `"html"`).  It's recommended to use a different extension for pages and sub-components, so that svelte-render doesn't unnecessarily create pages for sub-components it finds in the pages directory (e.g. .html for pages and .svelte for sub-components).
+`type` (for use with `init`, see below): File extension (defaults to `"html"`).  It's recommended to use a different extension for pages and sub-components, so that svelte-render doesn't unnecessarily create pages for sub-components it finds in the pages directory (e.g. .html for pages and .svelte for sub-components).
 
-`init`: Find all pages (files of `type` in `dir`) and build them on startup (defaults to `true`).  Avoids waiting for initial compilation the first time you request each page.  `dir` and `type` are only used if `init` is on.
+`init`: Find all pages (files of `type` in `dir`) and build them on startup.  Defaults to `true`.  This avoids waiting for initial compilation the first time you request each page.
 
 `watch`: Watch component files and dependencies and auto-rebuild (defaults to `dev`).
 
