@@ -1,6 +1,6 @@
 {
 	"name": "svelte-render",
-	"version": "1.0.8",
+	"version": "1.0.9",
 	"dependencies": {
 		"chokidar": "^3.0.1",
 		"flowfs": "^2.0.0",
