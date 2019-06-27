@@ -32,7 +32,7 @@ Design
 
 The motivation behind svelte-render is to be able to build the view layer of a web app using a hierarchy of Svelte components and as little else as possible, while not having to "buy in" to a full app framework.
 
-Svelte-render is therefore a view engine (like Pug or EJS) as opposed to an app framework (like [Sapper](https://sapper.svelte.dev) or [Next.js](https://nextjs.org)).
+It is therefore a view engine (like Pug or EJS) as opposed to an app framework (like [Sapper](https://sapper.svelte.dev) or [Next.js](https://nextjs.org)).
 
 Components are compiled internally on the fly; there are no separate compiled versions of the modules living in the codebase.
 
