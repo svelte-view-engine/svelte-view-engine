@@ -21,6 +21,7 @@ module.exports = async (path, name, options, cache) => {
 		plugins: [
 			svelte(merge({
 				hydratable: true,
+				css: false,
 			}, options.svelte)),
 	
 			resolve({
