@@ -3,7 +3,6 @@ let svelte = require("rollup-plugin-svelte");
 let resolve = require("rollup-plugin-node-resolve");
 let commonjs = require("rollup-plugin-commonjs");
 let {terser} = require("rollup-plugin-terser");
-let requireFromString = require("require-from-string");
 let fs = require("flowfs");
 let merge = require("lodash.merge");
 
