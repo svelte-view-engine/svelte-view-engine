@@ -1,15 +1,15 @@
-Svelte-render
-=============
+svelte-view-engine
+==================
 
-Svelte-render is a [view engine](https://expressjs.com/en/guide/using-template-engines.html) for Express that renders Svelte components.
+svelte-view-engine is a [view engine](https://expressjs.com/en/guide/using-template-engines.html) for Express that renders Svelte components.
 
 ```javascript
-const svelteRender = require("svelte-render");
+const svelteViewEngine = require("svelte-view-engine");
 
 let dir = "./pages";
 let type = "html";
 
-app.engine(type, svelteRender({
+app.engine(type, svelteViewEngine({
 	template: "./template.html", // see Root template below
 	dir,
 	type,
@@ -36,7 +36,7 @@ app.get("/", (req, res) => {
 Design
 ------
 
-The motivation behind svelte-render is to be able to build the view layer of a web app using a hierarchy of Svelte components and as little else as possible, while not having to "buy in" to a full app framework.
+The motivation behind svelte-view-engine is to be able to build the view layer of a web app using a hierarchy of Svelte components and as little else as possible, while not having to "buy in" to a full app framework.
 
 It is therefore a view engine (like Pug or EJS) as opposed to an app framework (like [Sapper](https://sapper.svelte.dev) or [Next.js](https://nextjs.org)).
 
@@ -76,9 +76,9 @@ To define these, you pass a single "root template" to be used for all pages.  Th
 </html>
 ```
 
-- `head` is the SSR-rendered markup from any `<svelte:head>` tags
+- `head` is the SSR-view-engineed markup from any `<svelte:head>` tags
 - `css` is the CSS
-- `html` is the SSR-rendered component markup
+- `html` is the SSR-view-engineed component markup
 - `js` is the component code as an IIFE
 - `name` is the basename of the .svelte file, and is used as the client-side component class name
 - `props` is a JSON-stringified version of the object you pass to `res.render()`
@@ -86,7 +86,7 @@ To define these, you pass a single "root template" to be used for all pages.  Th
 Props/payload
 -------------
 
-svelte-render/payload exposes a global variable called `props` that makes the view locals available to all components, server-side and client-side.  To use the data client-side, set the `props` variable in your root template (before the `${js}` placeholder):
+svelte-view-engine/payload exposes a global variable called `props` that makes the view locals available to all components, server-side and client-side.  To use the data client-side, set the `props` variable in your root template (before the `${js}` placeholder):
 
 ```html
 ...
@@ -108,7 +108,7 @@ You can use it in your components like so:
 
 ```html
 <script>
-	import payload from "svelte-render/payload";
+	import payload from "svelte-view-engine/payload";
 	
 	let data = payload.get();
 </script>
@@ -124,7 +124,7 @@ Options
 
 `dir` (for use with `init`, see below): Pages directory (defaults to `"./pages"`).  This should be the same as the "views" option in Express.
 
-`type` (for use with `init`, see below): File extension (defaults to `"html"`).  It's recommended to use a different extension for pages and sub-components, so that svelte-render doesn't unnecessarily create pages for sub-components it finds in the pages directory (e.g. .html for pages and .svelte for sub-components).
+`type` (for use with `init`, see below): File extension (defaults to `"html"`).  It's recommended to use a different extension for pages and sub-components, so that svelte-view-engine doesn't unnecessarily create pages for sub-components it finds in the pages directory (e.g. .html for pages and .svelte for sub-components).
 
 `init`: Find all pages (files of `type` in `dir`) and build them on startup.  Defaults to `true`.  This avoids waiting for initial compilation the first time you request each page.
 

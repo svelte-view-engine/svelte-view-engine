@@ -1,6 +1,6 @@
 {
-	"name": "svelte-render",
-	"version": "1.2.0",
+	"name": "svelte-view-engine",
+	"version": "1.0.0",
 	"dependencies": {
 		"chokidar": "^3.0.1",
 		"flowfs": "^3.0.0",
