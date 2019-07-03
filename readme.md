@@ -76,9 +76,9 @@ To define these, you pass a single "root template" to be used for all pages.  Th
 </html>
 ```
 
-- `head` is the SSR-view-engineed markup from any `<svelte:head>` tags
+- `head` is the SSR-rendered markup from any `<svelte:head>` tags
 - `css` is the CSS
-- `html` is the SSR-view-engineed component markup
+- `html` is the SSR-rendered component markup
 - `js` is the component code as an IIFE
 - `name` is the basename of the .svelte file, and is used as the client-side component class name
 - `props` is a JSON-stringified version of the object you pass to `res.render()`
