@@ -22,6 +22,14 @@ ${name} - the component name used in the var declaration above
 ${props} - a JSON-stringified object of props to render
 */
 
+/*
+saving a .scss file that gets @imported into the .svelte <style>
+triggers a rebuild, but for some reason doesn't use the new css
+if using cached bundles
+*/
+
+let forceRebuildDependencyTypes = ["sass", "scss"];
+
 module.exports = class {
 	constructor(template, path, options, liveReloadSocket) {
 		this.template = template;
@@ -36,9 +44,11 @@ module.exports = class {
 		this.build();
 	}
 	
-	async _build() {
-		this.serverComponent = await buildSsrComponent(this.path, this.options, this.cachedBundles.server);
-		this.clientComponent = await buildDomComponent(this.path, this.name, this.options, this.cachedBundles.client);
+	async _build(forceRebuild) {
+		let cache = forceRebuild ? {} : this.cachedBundles;
+		
+		this.serverComponent = await buildSsrComponent(this.path, this.options, cache.server);
+		this.clientComponent = await buildDomComponent(this.path, this.name, this.options, cache.client);
 		this.cachedBundles.server = this.serverComponent.cache;
 		this.cachedBundles.client = this.clientComponent.cache;
 		
@@ -49,9 +59,11 @@ module.exports = class {
 			
 			this.watcher = chokidar.watch(this.clientComponent.watchFiles);
 			
-			this.watcher.on("change", () => {
+			this.watcher.on("change", (path) => {
+				let forceRebuild = forceRebuildDependencyTypes.includes(fs(path).type);
+				
 				this.ready = false;
-				this.build();
+				this.build(forceRebuild);
 			});
 		}
 		
@@ -64,9 +76,15 @@ module.exports = class {
 		this.ready = true;
 	}
 	
-	async build() {
+	async build(forceRebuild) {
+		if (forceRebuild && this.pendingBuild) {
+			await this.pendingBuild;
+			
+			this.pendingBuild = null;
+		}
+		
 		if (!this.pendingBuild) {
-			this.pendingBuild = this._build();
+			this.pendingBuild = this._build(forceRebuild);
 		}
 		
 		await this.pendingBuild;
@@ -79,10 +97,12 @@ module.exports = class {
 			await this.build();
 		}
 		
-		// set the payload; render; then unset
-		// the payload is global (!) -- this is required to get access to the current
-		// value from within the compiled serverside component, and also to make the
-		// same module (./payload) work for both server- and client-side code.
+		/*
+		set the payload; render; then unset
+		the payload is global (!) -- this is required to get access to the current
+		value from within the compiled serverside component, and also to make the
+		same module (./payload) work for both server- and client-side code.
+		*/
 		
 		payload.set(locals);
 		
