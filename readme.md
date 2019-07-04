@@ -28,7 +28,7 @@ app.set("views", dir);
 
 app.get("/", (req, res) => {
 	res.render("Home", {
-		name: "world" // renders ./pages/Home.svelte with props {name: "world"}
+		name: "world" // renders ./pages/Home.html with props {name: "world"}
 	});
 });
 ```
