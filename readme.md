@@ -1,7 +1,7 @@
 svelte-view-engine
 ==================
 
-Svelte-view-engine is a [view engine](https://expressjs.com/en/guide/using-template-engines.html) for Express that renders Svelte components.
+Svelte-view-engine is an Express-compatible [view engine](https://expressjs.com/en/guide/using-template-engines.html) that renders Svelte components.
 
 ```javascript
 const svelteViewEngine = require("svelte-view-engine");
@@ -32,6 +32,8 @@ app.get("/", (req, res) => {
 	});
 });
 ```
+
+It can also be used outside of Express; `svelteViewEngine(options)` returns a function `(path, locals, callback)` where `callback` is called with `(error, html)`.
 
 Design
 ------
