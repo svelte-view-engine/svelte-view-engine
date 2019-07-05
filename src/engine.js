@@ -75,9 +75,19 @@ module.exports = (opts) => {
 		}
 		
 		try {
-			callback(null, await pages[path].render(sendLocals));
+			let result = await pages[path].render(sendLocals);
+			
+			if (callback) {
+				callback(null, result);
+			} else {
+				return result;
+			}
 		} catch (e) {
-			callback(e);
+			if (callback) {
+				callback(e);
+			} else {
+				throw e;
+			}
 		}
 	}
 }

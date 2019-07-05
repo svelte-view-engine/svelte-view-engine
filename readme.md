@@ -33,7 +33,7 @@ app.get("/", (req, res) => {
 });
 ```
 
-It can also be used outside of Express; `svelteViewEngine(options)` returns a function `(path, locals, callback)` where `callback` is called with `(error, html)`.
+It can also be used outside of Express; `svelteViewEngine(options)` returns a function `(path, locals[, callback])`.  If `callback` is supplied it is called with `(error, html)`, otherwise a promise is returned.
 
 Design
 ------
