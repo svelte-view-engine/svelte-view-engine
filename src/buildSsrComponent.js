@@ -9,19 +9,21 @@ let requireFromString = require("./utils/requireFromString");
 /*
 input: path to a .svelte file
 
-output: the module.exports of the Svelte component compiled with generate: ssr
-(server-side rendering).
-
-The SSR module is an object with a render method, which takes props and returns
-
-{
-	head,
-	html,
+output: {
+	cache,
+	component: Component,
 	css: {
 		code,
 		map
 	}
 }
+
+.cache is passed back in to speed up rebuilds
+
+Component is the module.exports of the Svelte component compiled with generate: ssr
+(server-side rendering).  This is an object with a render method, which takes props and returns {html, head, css}.  We don't use .css - see below.
+
+.css is the CSS for the component and all components it imports.  This is different to .component.render().css, which is the CSS from the component instance and all its child components at render time.  Using that one would cause an issue where components that are not there in SSR but get instantiated on the client, wouldn't have their CSS.
 */
 
 module.exports = async (path, options, cache) => {
