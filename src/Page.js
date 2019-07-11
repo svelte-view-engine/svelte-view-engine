@@ -116,7 +116,8 @@ module.exports = class {
 		
 		payload.set(locals);
 		
-		let {head, html, css} = this.serverComponent.component.render(locals);
+		let {head, html} = this.serverComponent.component.render(locals);
+		let {css} = this.serverComponent;
 		
 		payload.set(null);
 		
@@ -155,17 +156,19 @@ module.exports = class {
 			css: () => {
 				str += css.code;
 				
-				if (css.map) {
-					str += css.map;
-				}
+				// TODO data: url for inline source maps
+				//if (css.map) {
+				//	str += css.map;
+				//}
 			},
 			
 			js: () => {
 				str += js.code;
 				
-				if (js.map) {
-					str += js.map;
-				}
+				// TODO data: url for inline source maps
+				//if (js.map) {
+				//	str += js.map;
+				//}
 			},
 			
 			name: () => {
