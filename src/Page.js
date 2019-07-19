@@ -137,7 +137,7 @@ module.exports = class {
 				if (this.options.liveReload) {
 					str += `
 						<script>
-							var socket = new WebSocket("ws://" + location.host + ":${this.options.liveReloadPort}");
+							var socket = new WebSocket("ws://" + location.hostname + ":${this.options.liveReloadPort}");
 							
 							socket.addEventListener("message", function(message) {
 								if (message.data === "${this.name}") {
