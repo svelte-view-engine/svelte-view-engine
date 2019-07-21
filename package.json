@@ -1,8 +1,8 @@
 {
 	"name": "svelte-view-engine",
-	"version": "2.0.1",
+	"version": "2.0.2",
 	"dependencies": {
-		"chokidar": "^3.0.1",
+		"chokidar": "^3.0.2",
 		"flowfs": "^3.0.0",
 		"lodash.merge": "^4.6.1",
 		"rollup": "^1.10.1",

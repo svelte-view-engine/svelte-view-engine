@@ -27,6 +27,7 @@ triggers a rebuild, but for some reason doesn't use the new css
 if using cached bundles
 */
 
+let pathStartRe = /([A-Z]:|\/)/;
 let forceRebuildDependencyTypes = ["sass", "scss"];
 
 module.exports = class {
@@ -56,7 +57,19 @@ module.exports = class {
 				this.watcher.close();
 			}
 			
-			this.watcher = chokidar.watch(this.clientComponent.watchFiles);
+			this.watcher = chokidar.watch(this.clientComponent.watchFiles.map((path) => {
+				// some paths have markers from rollup plugins - strip these for watching
+				// some are also not absolute; these are also internal to rollup and can
+				// be stripped
+				
+				let start = path.match(pathStartRe);
+				
+				if (start) {
+					return path.substr(start.index);
+				} else {
+					return false;
+				}
+			}).filter(Boolean));
 			
 			this.watcher.on("change", (path) => {
 				let forceRebuild = forceRebuildDependencyTypes.includes(fs(path).type);
