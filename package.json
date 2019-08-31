@@ -1,16 +1,24 @@
 {
 	"name": "svelte-view-engine",
+<<<<<<< HEAD
 	"version": "4.0.2",
+=======
+	"version": "3.0.0",
+>>>>>>> add quick test; update to 3.0.0 (using broken svelte); add note about svelte bug
 	"dependencies": {
 		"chokidar": "^3.0.2",
 		"flowfs": "^3.0.0",
-		"lodash.merge": "^4.6.1",
-		"rollup": "^1.10.1",
-		"rollup-plugin-commonjs": "^9.3.4",
-		"rollup-plugin-node-resolve": "^4.2.3",
-		"rollup-plugin-svelte": "^5.0.3",
+		"lodash.merge": "^4.6.2",
+		"rollup": "^1.20.3",
+		"rollup-plugin-commonjs": "^10.1.0",
+		"rollup-plugin-node-resolve": "^5.2.0",
+		"rollup-plugin-svelte": "^5.1.0",
 		"rollup-plugin-terser": "^4.0.4",
+<<<<<<< HEAD
 		"svelte": "3.9.0",
+=======
+		"svelte": "^3.9.1",
+>>>>>>> add quick test; update to 3.0.0 (using broken svelte); add note about svelte bug
 		"tmp": "^0.1.0",
 		"ws": "^7.0.1"
 	}
