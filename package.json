@@ -1,6 +1,6 @@
 {
 	"name": "svelte-view-engine",
-	"version": "4.0.0",
+	"version": "4.0.1",
 	"dependencies": {
 		"chokidar": "^3.0.2",
 		"flowfs": "^3.0.0",
@@ -10,7 +10,7 @@
 		"rollup-plugin-node-resolve": "^4.2.3",
 		"rollup-plugin-svelte": "^5.0.3",
 		"rollup-plugin-terser": "^4.0.4",
-		"svelte": "3.6.9",
+		"svelte": "^3.9.0",
 		"tmp": "^0.1.0",
 		"ws": "^7.0.1"
 	}
