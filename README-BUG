@@ -1,1 +1,0 @@
-svelte 3.9.1 has a bug (?) where you can't have function calls in {#if} conditions.  this version uses that version of svelte - use the previous version (2.0.2)
