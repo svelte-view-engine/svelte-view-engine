@@ -1,10 +1,6 @@
 {
 	"name": "svelte-view-engine",
-<<<<<<< HEAD
-	"version": "4.0.2",
-=======
-	"version": "3.0.0",
->>>>>>> add quick test; update to 3.0.0 (using broken svelte); add note about svelte bug
+	"version": "4.0.3",
 	"dependencies": {
 		"chokidar": "^3.0.2",
 		"flowfs": "^3.0.0",
@@ -14,11 +10,7 @@
 		"rollup-plugin-node-resolve": "^5.2.0",
 		"rollup-plugin-svelte": "^5.1.0",
 		"rollup-plugin-terser": "^4.0.4",
-<<<<<<< HEAD
-		"svelte": "3.9.0",
-=======
-		"svelte": "^3.9.1",
->>>>>>> add quick test; update to 3.0.0 (using broken svelte); add note about svelte bug
+		"svelte": "^3.12.0",
 		"tmp": "^0.1.0",
 		"ws": "^7.0.1"
 	}
