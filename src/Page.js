@@ -58,9 +58,11 @@ module.exports = class {
 			}
 			
 			this.watcher = chokidar.watch(this.clientComponent.watchFiles.map((path) => {
-				// some paths have markers from rollup plugins - strip these for watching
-				// some are also not absolute; these are also internal to rollup and can
-				// be stripped
+				/*
+				some paths have markers from rollup plugins - strip these for watching
+				some are also not absolute; these are also internal to rollup and can
+				be stripped
+				*/
 				
 				let start = path.match(pathStartRe);
 				
