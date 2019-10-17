@@ -3,13 +3,14 @@ let Template = require("../src/Template");
 
 process.chdir(__dirname);
 
+/*
+TODO componentBuilders
+*/
+
 let options = {
 	liveReload: false,
 	watch: false,
 	minify: false,
-	svelte: {
-		dev: true,
-	},
 };
 
 (async () => {

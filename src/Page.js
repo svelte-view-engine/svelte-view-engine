@@ -1,6 +1,5 @@
 let chokidar = require("chokidar");
 let fs = require("flowfs");
-let componentBuilders = require("./componentBuilders");
 let payload = require("./payload");
 let validIdentifier = require("./utils/validIdentifier");
 
@@ -47,8 +46,8 @@ module.exports = class {
 	async _build(forceRebuild) {
 		let cache = forceRebuild ? {} : this.cachedBundles;
 		
-		this.serverComponent = await componentBuilders.ssr(this.path, this.options, cache.server);
-		this.clientComponent = await componentBuilders.dom(this.path, this.name, this.options, cache.client);
+		this.serverComponent = await this.options.componentBuilders.ssr(this.path, this.options, cache.server);
+		this.clientComponent = await this.options.componentBuilders.dom(this.path, this.name, this.options, cache.client);
 		this.cachedBundles.server = this.serverComponent.cache;
 		this.cachedBundles.client = this.clientComponent.cache;
 		
@@ -89,30 +88,19 @@ module.exports = class {
 	}
 	
 	async build(forceRebuild) {
-		try {
-			if (forceRebuild && this.pendingBuild) {
-				await this.pendingBuild;
-				
-				this.pendingBuild = null;
-			}
-			
-			if (!this.pendingBuild) {
-				this.pendingBuild = this._build(forceRebuild);
-			}
-			
+		if (forceRebuild && this.pendingBuild) {
 			await this.pendingBuild;
-		} catch (e) {
-			console.error(e);
 			
-			/*
-			for some reason the previous error keeps coming back even after fixing
-			the component; re-requiring the builders solves it
-			*/
-			
-			componentBuilders = require("./componentBuilders");
-		} finally {
 			this.pendingBuild = null;
 		}
+		
+		if (!this.pendingBuild) {
+			this.pendingBuild = this._build(forceRebuild);
+		}
+		
+		await this.pendingBuild;
+	
+		this.pendingBuild = null;
 	}
 	
 	async render(locals) {

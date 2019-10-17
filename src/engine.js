@@ -1,13 +1,12 @@
 let Page = require("./Page");
 let Template = require("./Template");
-let merge = require("lodash.merge");
 let ws = require("ws");
 let fs = require("flowfs");
 
-module.exports = (opts) => {
+module.exports = (opts={}) => {
 	let dev = process.env.NODE_ENV !== "production";
 	
-	let options = merge({
+	let options = Object.assign({
 		dir: "./pages",
 		type: "html",
 		init: true,
@@ -21,20 +20,13 @@ module.exports = (opts) => {
 		// just set the option
 		liveReloadPort: 5000 + Math.floor(Math.random() * 60535),
 		minify: !dev,
-		useLocalsForSsr: false,
-		svelte: {
-			dev,
-		},
 		excludeLocals: [
 			"_locals",
 			"settings",
 			"cache",
 		],
+		dev,
 	}, opts);
-	
-	if (opts.excludeLocals) {
-		options.excludeLocals = opts.excludeLocals;
-	}
 	
 	let liveReloadSocket = new ws.Server({
 		port: options.liveReloadPort,

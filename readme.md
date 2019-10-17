@@ -16,8 +16,9 @@ app.engine(type, svelteViewEngine({
 	init: true,
 	watch: true,
 	liveReload: true,
-	svelte: {
-		// rollup-plugin-svelte config
+	componentBuilders: { // see Component builders below
+		ssr: buildSsrComponent,
+		dom: buildDomComponent,
 	},
 }));
 	
@@ -81,9 +82,14 @@ To define these, you pass a single "root template" to be used for all pages.  Th
 - `head` is the SSR-rendered markup from any `<svelte:head>` tags
 - `css` is the CSS
 - `html` is the SSR-rendered component markup
-- `js` is the component code as an IIFE
+- `js` is the component code returned by `componentBuilders.dom`
 - `name` is the basename of the .svelte file, and is used as the client-side component class name
 - `props` is a JSON-stringified version of the object you pass to `res.render()`
+
+Component builders
+------------------
+
+To avoid burying Svelte and/or bundler configuration in this project, the entire process of compiling Svelte components is injected in as options.  TODO document signatures etc.
 
 Props/payload
 -------------
@@ -119,8 +125,7 @@ You can use it in your components like so:
 Options
 -------
 
-`dev` = `process.env.NODE_ENV !== "production"`<br>
-`prod` = `process.env.NODE_ENV === "production"`
+`dev` = `process.env.NODE_ENV !== "production"`
 
 `template`: Path to root template file.
 
@@ -135,9 +140,5 @@ Options
 `liveReload`: Auto reload the browser when component rebuilds (defaults to `dev`).
 
 `liveReloadPort`: WebSocket port to use for live reload message.  Defaults to a random port between 5000 and 65535 (this will throw an error if the port is in use, so if you're using a process manager it will restart the app until it finds an available port).
-
-`minify`: Use [rollup-plugin-terser](https://github.com/TrySound/rollup-plugin-terser) to minify CSS and JS (defaults to `prod`).
-
-`svelte`: Options to pass to [rollup-plugin-svelte](https://github.com/sveltejs/rollup-plugin-svelte).  This starts as `{dev: dev}` and is merged with the supplied options.
 
 `excludeLocals`: Array of object keys to exclude from the locals that get passed to the component.  Some keys are added by Express, and may be unnecessary and/or security concerns if exposed.  This defaults to `["_locals", "settings", "cache"]` and is overwritten (not merged) with the supplied setting.
