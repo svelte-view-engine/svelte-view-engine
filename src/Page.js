@@ -20,14 +20,15 @@ ${name} - the component name used in the var declaration above
 ${props} - a JSON-stringified object of props to render
 */
 
+let pathStartRe = /([A-Z]:|\/)/;
+
 /*
 saving a .scss file that gets @imported into the .svelte <style>
 triggers a rebuild, but for some reason doesn't use the new css
 if using cached bundles
 */
 
-let pathStartRe = /([A-Z]:|\/)/;
-let forceRebuildDependencyTypes = ["sass", "scss"];
+let noCacheDependencyTypes = ["sass", "scss"];
 
 module.exports = class {
 	constructor(template, path, options, liveReloadSocket) {
@@ -43,8 +44,8 @@ module.exports = class {
 		this.build();
 	}
 	
-	async _build(forceRebuild) {
-		let cache = forceRebuild ? {} : this.cachedBundles;
+	async _build(noCache) {
+		let cache = noCache ? {} : this.cachedBundles;
 		
 		this.serverComponent = await this.options.componentBuilders.ssr(this.path, this.options, cache.server);
 		this.clientComponent = await this.options.componentBuilders.dom(this.path, this.name, this.options, cache.client);
@@ -71,10 +72,10 @@ module.exports = class {
 			}).filter(Boolean));
 			
 			this.watcher.on("change", (path) => {
-				let forceRebuild = forceRebuildDependencyTypes.includes(fs(path).type);
+				let noCache = noCacheDependencyTypes.includes(fs(path).type);
 				
 				this.ready = false;
-				this.build(forceRebuild);
+				this.build(noCache);
 			});
 		}
 		
@@ -87,15 +88,15 @@ module.exports = class {
 		this.ready = true;
 	}
 	
-	async build(forceRebuild) {
-		if (forceRebuild && this.pendingBuild) {
+	async build(noCache) {
+		if (noCache && this.pendingBuild) {
 			await this.pendingBuild;
 			
 			this.pendingBuild = null;
 		}
 		
 		if (!this.pendingBuild) {
-			this.pendingBuild = this._build(forceRebuild);
+			this.pendingBuild = this._build(noCache);
 		}
 		
 		await this.pendingBuild;
@@ -110,7 +111,7 @@ module.exports = class {
 		
 		/*
 		set the payload; render; then unset
-		the payload is global (!) -- this is required to get access to the current
+		the payload is global -- this is required to get access to the current
 		value from within the compiled serverside component, and also to make the
 		same module (./payload) work for both server- and client-side code.
 		*/
