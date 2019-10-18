@@ -29,7 +29,10 @@ module.exports = (opts={}) => {
 	});
 	
 	let pages = {};
-	let template = new Template(options.template, options);
+	
+	let template = new Template(options.template, {
+		watch: options.watch,
+	});
 	
 	let createPage = (path) => {
 		return new Page(template, path, options, liveReloadSocket);
