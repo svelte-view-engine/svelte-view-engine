@@ -14,6 +14,7 @@ module.exports = (opts={}) => {
 		watch: dev,
 		liveReload: dev,
 		liveReloadPort: 5000 + Math.floor(Math.random() * 60535),
+		transpile: !dev,
 		minify: !dev,
 		excludeLocals: [
 			"_locals",
