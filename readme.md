@@ -1,7 +1,7 @@
 svelte-view-engine
 ==================
 
-Svelte-view-engine is an Express-compatible [view engine](https://expressjs.com/en/guide/using-template-engines.html) that renders Svelte components.
+svelte-view-engine is an Express-compatible [view engine](https://expressjs.com/en/guide/using-template-engines.html) that renders Svelte components.
 
 ```javascript
 const svelteViewEngine = require("svelte-view-engine");
@@ -34,7 +34,7 @@ app.get("/", (req, res) => {
 });
 ```
 
-It can also be used outside of Express; `svelteViewEngine(options)` returns a function `(path, locals[, callback])`.  If `callback` is supplied it is called with `(error, html)`, otherwise a promise is returned.
+It can also be used outside of Express.  `svelteViewEngine(options)` returns a function `(path, locals[, callback])`.  If `callback` is supplied it is called with `(error, html)`, otherwise a promise is returned.
 
 Design
 ------
@@ -44,6 +44,8 @@ The motivation behind svelte-view-engine is to be able to build the view layer o
 It is therefore a view engine (like Pug or EJS) as opposed to an app framework (like [Sapper](https://sapper.svelte.dev) or [Next.js](https://nextjs.org)).
 
 Components are compiled and cached internally on the fly; there are no separate compiled files living in the codebase.
+
+svelte-view-engine doesn't know how to compile Svelte components itself; you pass that in as functions.  This is to allow you to use your existing Svelte build process, or write one that suits you, instead of having it baked in to the view engine.
 
 Root template
 -------------
@@ -89,7 +91,196 @@ To define these, you pass a single "root template" to be used for all pages.  Th
 Component builders
 ------------------
 
-To avoid burying Svelte and/or bundler configuration in this project, the entire process of compiling Svelte components is injected in as options.  TODO document signatures etc.
+buildDomComponent
+=================
+
+This function should accept `(path, name, options, cache)` and return a promise that resolves to:
+
+```javascript
+{
+	cache, // cache to pass to next invocation
+	component, // Svelte component class
+	css: {
+		code: "...",
+		map: "...",
+	},
+}
+```
+
+Arguments:
+
+```
+path: "/path/to/Component.svelte"
+name: "Component"
+options: the full options passed to svelteViewEngine
+cache: .cache from previous output
+```
+
+###Example
+
+Here is an example `buildDomComponent` function:
+
+```javascript
+let rollup = require("rollup");
+let svelte = require("rollup-plugin-svelte");
+let resolve = require("rollup-plugin-node-resolve");
+let commonjs = require("rollup-plugin-commonjs");
+let babel = require("./babel");
+let sass = require("./sass");
+
+module.exports = async (path, name, options, cache) => {
+	let inputOptions = {
+		input: path,
+		cache,
+		plugins: [
+			svelte({
+				hydratable: true,
+				
+				preprocess: {
+					style: sass,
+				},
+				
+				/*
+				TODO
+				
+				client-side CSS is needed in dev because the bundle doesn't write
+				any unchanged components' CSS when using cache (see issue below)
+				using client-side CSS is OK for dev but not prod as you get a FOUC
+				but we won't be using cache in prod anyway, so if the issue
+				doesn't get resolved we could leave it like this, as it only
+				affects dev
+				
+				https://github.com/rollup/rollup-plugin-svelte/issues/62
+				
+				if/when the issue is resolved this should be false as the ssr provides
+				the css
+				*/
+				
+				css: options.dev,
+				
+				onwarn: _ => null,
+				
+				dev: options.dev,
+			}),
+	
+			resolve({
+				browser: true,
+			}),
+			
+			commonjs(),
+		],
+	};
+	
+	let outputOptions = {
+		format: "iife",
+		name,
+	};
+	
+	let bundle = await rollup.rollup(inputOptions);
+	
+	let {output} = await bundle.generate(outputOptions);
+	
+	let js = output[0];
+	
+	if (options.transpile) {
+		js = await babel(js.code);
+	}
+	
+	if (options.minify) {
+		// TODO terser
+	}
+	
+	return {
+		cache: bundle.cache,
+		js,
+		watchFiles: bundle.watchFiles,
+	};
+}
+```
+
+buildSsrComponent
+=================
+
+This function should accept `(path, options, cache)` and return a promise that resolves to:
+
+```javascript
+{
+	cache, // cache to pass to next invocation
+	component, // Svelte component class
+	css: {
+		code: "...",
+		map: "...",
+	},
+}
+```
+
+Arguments:
+
+```
+path: "/path/to/Component.svelte"
+options: the full options passed to svelteViewEngine
+cache: .cache from previous output
+```
+
+###Example
+
+Here is an example `buildSsrComponent` function:
+
+```javascript
+let rollup = require("rollup");
+let svelte = require("rollup-plugin-svelte");
+let resolve = require("rollup-plugin-node-resolve");
+let commonjs = require("rollup-plugin-commonjs");
+let requireFromString = require("./utils/requireFromString");
+let sass = require("./sass");
+
+module.exports = async (path, options, cache) => {
+	let css;
+	
+	let inputOptions = {
+		input: path,
+		cache,
+		plugins: [
+			svelte({
+				generate: "ssr",
+				
+				preprocess: {
+					style: sass,
+				},
+				
+				css: (c) => {
+					css = c;
+				},
+				
+				onwarn: _ => null,
+			
+				dev: options.dev,
+			}),
+	
+			resolve({
+				browser: true
+			}),
+			
+			commonjs(),
+		],
+	};
+	
+	let outputOptions = {
+		format: "cjs",
+	};
+	
+	let bundle = await rollup.rollup(inputOptions);
+	
+	let {output} = await bundle.generate(outputOptions);
+	
+	return {
+		cache: bundle.cache,
+		component: await requireFromString(output[0].code),
+		css,
+	};
+}
+
+```
 
 Props/payload
 -------------

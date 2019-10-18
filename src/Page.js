@@ -120,6 +120,13 @@ module.exports = class {
 		
 		payload.set(locals);
 		
+		/*
+		note that we don't use .css from render() - this only includes CSS for
+		child components that happen to be rendered this time.  we use
+		serverComponent.css which has CSS for all components that are imported
+		(ie all components that could possibly be rendered)
+		*/
+		
 		let {head, html} = this.serverComponent.component.render(locals);
 		let {css} = this.serverComponent;
 		

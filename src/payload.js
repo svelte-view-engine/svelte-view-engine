@@ -15,5 +15,5 @@ module.exports = {
 	
 	get() {
 		return g.props;
-	}
+	},
 };
