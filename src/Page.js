@@ -127,10 +127,16 @@ module.exports = class {
 		(ie all components that could possibly be rendered)
 		*/
 		
-		let {head, html} = this.serverComponent.component.render(locals);
-		let {css} = this.serverComponent;
+		let head;
+		let html;
+		let css;
 		
-		payload.set(null);
+		try {
+			({head, html} = this.serverComponent.component.render(locals));
+			({css} = this.serverComponent);
+		} finally {
+			payload.set(null);
+		}
 		
 		let {js} = this.clientComponent;
 		
