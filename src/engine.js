@@ -74,6 +74,8 @@ module.exports = (opts={}) => {
 				return result;
 			}
 		} catch (e) {
+			delete pages[path];
+			
 			if (callback) {
 				callback(e);
 			} else {
