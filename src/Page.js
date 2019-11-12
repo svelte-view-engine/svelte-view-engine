@@ -52,6 +52,14 @@ module.exports = class {
 		this.cachedBundles.server = this.serverComponent.cache;
 		this.cachedBundles.client = this.clientComponent.cache;
 		
+		/*
+		NOTE this way of watching isn't the most efficient; we
+		could have a central component in charge of watching (e.g.
+		the engine) and only have one watcher per file.  as it is
+		now, multiple pages reference e.g. the Button component
+		and all set up a watch for it
+		*/
+		
 		if (this.options.watch) {
 			if (this.watcher) {
 				this.watcher.close();
@@ -172,20 +180,10 @@ module.exports = class {
 			
 			css: () => {
 				str += css.code;
-				
-				// TODO data: url for inline source maps
-				//if (css.map) {
-				//	str += css.map;
-				//}
 			},
 			
 			js: () => {
 				str += js.code;
-				
-				// TODO data: url for inline source maps
-				//if (js.map) {
-				//	str += js.map;
-				//}
 			},
 			
 			name: () => {
