@@ -94,7 +94,7 @@ module.exports = class {
 		
 		if (this.options.liveReload) {
 			for (let client of this.liveReloadSocket.clients) {
-				client.send(this.name);
+				client.send(this.path);
 			}
 		}
 		
@@ -168,7 +168,7 @@ module.exports = class {
 							var socket = new WebSocket("ws://" + location.hostname + ":${this.options.liveReloadPort}");
 							
 							socket.addEventListener("message", function(message) {
-								if (message.data === "${this.name}") {
+								if (message.data === "${this.path}") {
 									location.reload();
 								}
 							});
