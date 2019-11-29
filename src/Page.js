@@ -49,8 +49,11 @@ module.exports = class {
 		
 		this.serverComponent = await this.options.componentBuilders.ssr(this.path, this.options, cache.server);
 		this.clientComponent = await this.options.componentBuilders.dom(this.path, this.name, this.options, cache.client);
-		this.cachedBundles.server = this.serverComponent.cache;
-		this.cachedBundles.client = this.clientComponent.cache;
+		
+		if (this.options.watch) {
+			this.cachedBundles.server = this.serverComponent.cache;
+			this.cachedBundles.client = this.clientComponent.cache;
+		}
 		
 		/*
 		NOTE this way of watching isn't the most efficient; we
