@@ -3,7 +3,7 @@
 	"version": "6.0.0",
 	"dependencies": {
 		"chokidar": "^3.0.2",
-		"flowfs": "^3.5.0",
+		"flowfs": "^3.6.0",
 		"ws": "^7.0.1"
 	}
 }
