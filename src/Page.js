@@ -219,13 +219,21 @@ module.exports = class {
 				if (this.options.liveReload) {
 					str += `
 						<script>
-							var socket = new WebSocket("ws://" + location.hostname + ":${this.options.liveReloadPort}");
+							function createSocket() {
+								var socket = new WebSocket("ws://" + location.hostname + ":${this.options.liveReloadPort}");
+								
+								socket.addEventListener("message", function(message) {
+									if (message.data === "${this.path}") {
+										location.reload();
+									}
+								});
+								
+								socket.addEventListener("close", function() {
+									setTimeout(createSocket, 500);
+								});
+							}
 							
-							socket.addEventListener("message", function(message) {
-								if (message.data === "${this.path}") {
-									location.reload();
-								}
-							});
+							createSocket();
 						</script>
 					`;
 				}
