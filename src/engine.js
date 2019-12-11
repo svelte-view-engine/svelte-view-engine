@@ -4,7 +4,6 @@ let ws = require("ws");
 let fs = require("flowfs");
 
 module.exports = function(opts={}) {
-	console.log(opts);
 	let dev = process.env.NODE_ENV !== "production";
 	
 	let options = Object.assign({
