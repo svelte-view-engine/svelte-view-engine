@@ -48,22 +48,27 @@ module.exports = function(opts={}) {
 	prebuild function is called if the init option is true.  it is also
 	exposed for more fine-grained control, e.g. a script that prebuilds the
 	pages then exits to free up memory
+	
+	the keep argument saves memory for standalone prebuild scripts -- if
+	we're caching to files, we don't need to keep the pages in memory
 	*/
 	
-	async function prebuild() {
+	async function prebuild(keep=false) {
 		let files = await fs(options.dir).glob("**/*." + options.type);
 		
 		for (let node of files) {
 			let page = createPage(node.path);
 			
-			pages[node.path] = page;
+			if (keep) {
+				pages[node.path] = page;
+			}
 			
-			page.build();
+			await page.build();
 		}
 	}
 	
 	if (options.init) {
-		prebuild();
+		prebuild(true);
 	}
 	
 	return {
