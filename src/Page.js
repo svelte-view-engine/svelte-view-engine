@@ -36,19 +36,69 @@ module.exports = class {
 		this.path = path;
 		this.options = options;
 		this.name = validIdentifier(fs(path).basename);
+		
 		this.ready = false;
 		this.pendingBuild = null;
 		this.cachedBundles = {};
+		
+		let dir = fs(options.dir);
+		
+		if (options.useFileCache) {
+			this.cacheFile = fs(path).reparent(dir, options.useFileCache);
+		}
+		
 		this.liveReloadSocket = liveReloadSocket;
 		
 		this.build();
 	}
 	
+	async deleteCacheFile() {
+		try {
+			await this.cacheFile.delete();
+		} catch (e) {
+			console.error(e);
+		}
+	}
+	
+	async writeCacheFile() {
+		await this.cacheFile.parent.mkdirp();
+		
+		await this.cacheFile.writeJson({
+			client: this.clientComponent,
+			server: this.serverComponent,
+		});
+	}
+	
+	async readCacheFile() {
+		return await this.cacheFile.readJson();
+	}
+	
 	async _build(noCache) {
 		let cache = noCache ? {} : this.cachedBundles;
+		let fileCacheExists;
 		
-		this.serverComponent = await this.options.componentBuilders.ssr(this.path, this.options, cache.server);
-		this.clientComponent = await this.options.componentBuilders.dom(this.path, this.name, this.options, cache.client);
+		if (this.options.useFileCache) {
+			fileCacheExists = await this.cacheFile.exists();
+		}
+		
+		if (this.options.useFileCache && fileCacheExists) {
+			let {
+				client,
+				server,
+			} = await this.readCacheFile();
+			
+			this.serverComponent = server;
+			this.clientComponent = client;
+		} else {
+			this.serverComponent = await this.options.componentBuilders.buildSsr(this.path, this.options, cache.server);
+			this.clientComponent = await this.options.componentBuilders.buildDom(this.path, this.name, this.options, cache.client);
+		}
+		
+		this.ssrModule = await this.options.componentBuilders.instantiateSsrModule(this.serverComponent.component, this.path);
+		
+		if (this.options.useFileCache && !fileCacheExists) {
+			this.writeCacheFile();
+		}
 		
 		if (this.options.watch) {
 			this.cachedBundles.server = this.serverComponent.cache;
@@ -84,8 +134,12 @@ module.exports = class {
 				}
 			}).filter(Boolean));
 			
-			this.watcher.on("change", (path) => {
+			this.watcher.on("change", async (path) => {
 				let noCache = noCacheDependencyTypes.includes(fs(path).type);
+				
+				if (this.options.useFileCache) {
+					await this.deleteCacheFile();
+				}
 				
 				this.ready = false;
 				this.build(noCache);
@@ -143,7 +197,7 @@ module.exports = class {
 		let css;
 		
 		try {
-			({head, html} = this.serverComponent.component.render(locals));
+			({head, html} = this.ssrModule.render(locals));
 			({css} = this.serverComponent);
 		} finally {
 			payload.set(null);
