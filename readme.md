@@ -6,13 +6,10 @@ svelte-view-engine is an Express-compatible [view engine](https://expressjs.com/
 ```javascript
 const svelteViewEngine = require("svelte-view-engine");
 
-let dir = "./pages";
-let type = "html";
-
-app.engine(type, svelteViewEngine({
+let engine = svelteViewEngine({
 	template: "./template.html", // see Root template below
-	dir,
-	type,
+	dir: "./pages",
+	type: "html",
 	init: true,
 	watch: true,
 	liveReload: true,
@@ -20,10 +17,11 @@ app.engine(type, svelteViewEngine({
 		ssr: buildSsrComponent,
 		dom: buildDomComponent,
 	},
-}));
-	
-app.set("view engine", type);
-app.set("views", dir);
+});
+
+app.engine(engine.type, engine.render);
+app.set("view engine", engine.type);
+app.set("views", engine.dir);
 
 // ...
 
@@ -37,7 +35,7 @@ app.get("/", (req, res) => {
 It can also be used outside of Express.  `svelteViewEngine(options)` returns a function `(path, locals[, callback])`.  If `callback` is supplied it is called with `(error, html)`, otherwise a promise is returned.
 
 Design
-------
+======
 
 The motivation behind svelte-view-engine is to be able to build the view layer of a web app using a hierarchy of Svelte components and as little else as possible, while not having to "buy in" to a full app framework.
 
@@ -48,7 +46,7 @@ Components are compiled and cached internally on the fly; there are no separate 
 svelte-view-engine doesn't know how to compile Svelte components itself; you pass that in as functions.  This is to allow you to use your existing Svelte build process, or write one that suits you, instead of having it baked in to the view engine.
 
 Root template
--------------
+=============
 
 Svelte components and `<slot>`s take the place of, for example, Pug layouts and mixins for all your re-use and composition needs, but pages still need a bit of surrounding boilerplate HTML that you can't define in Svelte -- `<!doctype>`, `<html>` etc -- and you also need a few lines of JS to actually instantiate the component.
 
@@ -89,10 +87,10 @@ To define these, you pass a single "root template" to be used for all pages.  Th
 - `props` is a JSON-stringified version of the object you pass to `res.render()`
 
 Component builders
-------------------
+==================
 
 buildDomComponent
-=================
+-----------------
 
 This function should accept `(path, name, options, cache)` and return a promise that resolves to:
 
@@ -199,7 +197,7 @@ module.exports = async (path, name, options, cache) => {
 ```
 
 buildSsrComponent
-=================
+-----------------
 
 This function should accept `(path, options, cache)` and return a promise that resolves to:
 
@@ -282,8 +280,13 @@ module.exports = async (path, options, cache) => {
 
 ```
 
+instantiateSsrModule
+--------------------
+
+An async function that takes a string of code and returns the module value, like `require` but accepting a string of code instead of a path.
+
 Props/payload
--------------
+=============
 
 svelte-view-engine/payload exposes a global variable called `props` that makes the view locals available to all components, server-side and client-side.  To use the data client-side, set the `props` variable in your root template (before the `${js}` placeholder):
 
@@ -313,8 +316,13 @@ You can use it in your components like so:
 </script>
 ```
 
+Pre-building
+============
+
+The module exposes a `prebuild` function.  This is called internally if the `init` option is set.  Using it separately is useful if you want to have a script separate to your app that prebuilds the pages.  It requires the `useFileCache` option to specify the directory to store the cached pages in.  Doing it this way seems to reduce the memory footprint of the pages by a factor of 10.
+
 Options
--------
+=======
 
 `dev` = `process.env.NODE_ENV !== "production"`
 
@@ -325,6 +333,8 @@ Options
 `type` (for use with `init`, see below): File extension (defaults to `"html"`).  It's recommended to use a different extension for pages and sub-components, so that svelte-view-engine doesn't unnecessarily create pages for sub-components it finds in the pages directory (e.g. .html for pages and .svelte for sub-components).
 
 `init`: Find all pages (files of `type` in `dir`) and build them on startup.  Defaults to `true`.  This avoids waiting for initial compilation the first time you request each page.
+
+`useFileCache`: If specified, a directory to store cached versions of pages to avoid rebuilding unmodified pages on app restarts.
 
 `watch`: Watch component files and dependencies and auto-rebuild (defaults to `dev`).
 
