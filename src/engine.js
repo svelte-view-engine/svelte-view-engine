@@ -4,6 +4,7 @@ let ws = require("ws");
 let fs = require("flowfs");
 
 module.exports = function(opts={}) {
+	console.log(opts);
 	let dev = process.env.NODE_ENV !== "production";
 	
 	let options = Object.assign({
@@ -25,9 +26,13 @@ module.exports = function(opts={}) {
 		dev,
 	}, opts);
 	
-	let liveReloadSocket = new ws.Server({
-		port: options.liveReloadPort,
-	});
+	let liveReloadSocket;
+	
+	if (options.liveReload) {
+		liveReloadSocket = new ws.Server({
+			port: options.liveReloadPort,
+		});
+	}
 	
 	let pages = {};
 	
