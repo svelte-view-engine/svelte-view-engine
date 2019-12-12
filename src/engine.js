@@ -51,7 +51,12 @@ module.exports = function(opts={}) {
 			
 			pages[node.path] = page;
 			
-			await page.build();
+			try {
+				await page.build();
+			} catch (e) {
+				console.error("Error pre-building page " + path);
+				console.error(e);
+			}
 		}
 	}
 	

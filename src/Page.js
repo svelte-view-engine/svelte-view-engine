@@ -59,56 +59,62 @@ module.exports = class {
 	}
 	
 	async _build(rebuild, noCache) {
-		if (rebuild || !await this.buildFile.exists()) {
-			await this.runBuildScript(noCache);
-		}
-		
-		let {
-			client,
-			server,
-		} = await this.buildFile.readJson();
-
-		this.serverComponent = server;
-		this.clientComponent = client;
-
-		this.ssrModule = await instantiateSsrModule(this.serverComponent.component, this.path);
-		
-		if (this.options.watch) {
-			if (this.watcher) {
-				this.watcher.close();
+		try {
+			if (rebuild || !await this.buildFile.exists()) {
+				await this.runBuildScript(noCache);
 			}
 			
-			this.watcher = chokidar.watch(this.clientComponent.watchFiles.map((path) => {
-				/*
-				some paths have markers from rollup plugins - strip these for watching
-				some are also not absolute; these are also internal to rollup and can
-				be stripped
-				*/
-				
-				let start = path.match(pathStartRe);
-				
-				if (start) {
-					return path.substr(start.index);
-				} else {
-					return false;
+			let {
+				client,
+				server,
+			} = await this.buildFile.readJson();
+	
+			this.serverComponent = server;
+			this.clientComponent = client;
+	
+			this.ssrModule = await instantiateSsrModule(this.serverComponent.component, this.path);
+			
+			if (this.options.watch) {
+				if (this.watcher) {
+					this.watcher.close();
 				}
-			}).filter(Boolean));
-			
-			this.watcher.on("change", (path) => {
-				let noCache = noCacheDependencyTypes.includes(fs(path).type);
 				
-				this.ready = false;
-				this.build(true, noCache);
-			});
-		}
-		
-		if (this.options.liveReload) {
-			for (let client of this.liveReloadSocket.clients) {
-				client.send(this.path);
+				this.watcher = chokidar.watch(this.clientComponent.watchFiles.map((path) => {
+					/*
+					some paths have markers from rollup plugins - strip these for watching
+					some are also not absolute; these are also internal to rollup and can
+					be stripped
+					*/
+					
+					let start = path.match(pathStartRe);
+					
+					if (start) {
+						return path.substr(start.index);
+					} else {
+						return false;
+					}
+				}).filter(Boolean));
+				
+				this.watcher.on("change", (path) => {
+					let noCache = noCacheDependencyTypes.includes(fs(path).type);
+					
+					this.ready = false;
+					this.build(true, noCache);
+				});
 			}
+			
+			if (this.options.liveReload) {
+				for (let client of this.liveReloadSocket.clients) {
+					client.send(this.path);
+				}
+			}
+			
+			this.ready = true;
+		} catch (e) {
+			this.buildFile.delete();
+			
+			throw e;
 		}
-		
-		this.ready = true;
 	}
 	
 	async build(rebuild, noCache) {
