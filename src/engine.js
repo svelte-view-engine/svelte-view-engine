@@ -1,7 +1,7 @@
-let Page = require("./Page");
-let Template = require("./Template");
 let ws = require("ws");
 let fs = require("flowfs");
+let Page = require("./Page");
+let Template = require("./Template");
 
 module.exports = function(opts={}) {
 	let dev = process.env.NODE_ENV !== "production";
@@ -43,38 +43,25 @@ module.exports = function(opts={}) {
 		return new Page(template, path, options, liveReloadSocket);
 	}
 	
-	/*
-	prebuild function is called if the init option is true.  it is also
-	exposed for more fine-grained control, e.g. a script that prebuilds the
-	pages then exits to free up memory
-	
-	the keep argument saves memory for standalone prebuild scripts -- if
-	we're caching to files, we don't need to keep the pages in memory
-	*/
-	
-	async function prebuild(keep=false) {
+	async function prebuild() {
 		let files = await fs(options.dir).glob("**/*." + options.type);
 		
 		for (let node of files) {
 			let page = createPage(node.path);
 			
-			if (keep) {
-				pages[node.path] = page;
-			}
+			pages[node.path] = page;
 			
 			await page.build();
 		}
 	}
 	
 	if (options.init) {
-		prebuild(true);
+		prebuild();
 	}
 	
 	return {
 		dir: options.dir,
 		type: options.type,
-		
-		prebuild,
 		
 		async render(path, locals, callback) {
 			let sendLocals = {};

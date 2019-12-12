@@ -6,9 +6,6 @@ let instantiateSsrModule = require("./utils/instantiateSsrModule");
 let payload = require("./payload");
 
 /*
-this represents a component.  it caches the build artifacts and watches
-for changes.
-
 the render() method returns a string containing the complete HTML for the page,
 which can be passed directly back to express.
 
@@ -37,21 +34,12 @@ module.exports = class {
 		this.template = template;
 		this.path = path;
 		this.options = options;
+		this.liveReloadSocket = liveReloadSocket;
 		this.name = validIdentifier(fs(path).basename);
 		
 		this.ready = false;
 		this.pendingBuild = null;
-		this.cachedBundles = {};
-		
-		let dir = fs(options.dir);
-		
 		this.buildFile = fs(path).reparent(options.dir, options.buildDir).withExt(".json");
-		
-		this.liveReloadSocket = liveReloadSocket;
-	}
-	
-	async readBuildFile() {
-		return await this.buildFile.readJson();
 	}
 	
 	async runBuildScript(noCache=false) {
@@ -78,7 +66,7 @@ module.exports = class {
 		let {
 			client,
 			server,
-		} = await this.readBuildFile();
+		} = await this.buildFile.readJson();
 
 		this.serverComponent = server;
 		this.clientComponent = client;
@@ -106,7 +94,7 @@ module.exports = class {
 				}
 			}).filter(Boolean));
 			
-			this.watcher.on("change", async (path) => {
+			this.watcher.on("change", (path) => {
 				let noCache = noCacheDependencyTypes.includes(fs(path).type);
 				
 				this.ready = false;
@@ -146,6 +134,7 @@ module.exports = class {
 		
 		/*
 		set the payload; render; then unset
+		
 		the payload is global -- this is required to get access to the current
 		value from within the compiled serverside component, and also to make the
 		same module (./payload) work for both server- and client-side code.
