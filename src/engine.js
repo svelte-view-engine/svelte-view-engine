@@ -11,7 +11,7 @@ module.exports = function(opts={}) {
 		type: "html",
 		init: true,
 		template: null,
-		componentBuilders: {},
+		buildScript: null,
 		watch: dev,
 		liveReload: dev,
 		liveReloadPort: 5000 + Math.floor(Math.random() * 60535),

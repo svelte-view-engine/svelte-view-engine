@@ -1,7 +1,9 @@
 let chokidar = require("chokidar");
 let fs = require("flowfs");
-let payload = require("./payload");
+let cmd = require("./utils/cmd");
 let validIdentifier = require("./utils/validIdentifier");
+let instantiateSsrModule = require("./utils/instantiateSsrModule");
+let payload = require("./payload");
 
 /*
 this represents a component.  it caches the build artifacts and watches
@@ -43,75 +45,45 @@ module.exports = class {
 		
 		let dir = fs(options.dir);
 		
-		if (options.useFileCache) {
-			this.cacheFile = fs(path).reparent(dir, options.useFileCache);
-		}
+		this.buildFile = fs(path).reparent(options.dir, options.buildDir).withExt(".json");
 		
 		this.liveReloadSocket = liveReloadSocket;
-		
-		this.build();
 	}
 	
-	async deleteCacheFile() {
-		try {
-			await this.cacheFile.delete();
-		} catch (e) {
-			console.error(e);
-		}
+	async readBuildFile() {
+		return await this.buildFile.readJson();
 	}
 	
-	async writeCacheFile() {
-		await this.cacheFile.parent.mkdirp();
+	async runBuildScript(noCache=false) {
+		let json = {
+			name: this.name,
+			path: this.path,
+			buildPath: this.buildFile.path,
+			noCache,
+			options: this.options,
+		};
 		
-		await this.cacheFile.writeJson({
-			client: this.clientComponent,
-			server: this.serverComponent,
-		});
+		await cmd(`
+			js
+			${this.options.buildScript}
+			'${JSON.stringify(json)}'
+		`);
 	}
 	
-	async readCacheFile() {
-		return await this.cacheFile.readJson();
-	}
-	
-	async _build(noCache) {
-		let cache = noCache ? {} : this.cachedBundles;
-		let fileCacheExists;
-		
-		if (this.options.useFileCache) {
-			fileCacheExists = await this.cacheFile.exists();
+	async _build(rebuild, noCache) {
+		if (rebuild || !await this.buildFile.exists()) {
+			await this.runBuildScript(noCache);
 		}
 		
-		if (this.options.useFileCache && fileCacheExists) {
-			let {
-				client,
-				server,
-			} = await this.readCacheFile();
-			
-			this.serverComponent = server;
-			this.clientComponent = client;
-		} else {
-			this.serverComponent = await this.options.componentBuilders.buildSsr(this.path, this.options, cache.server);
-			this.clientComponent = await this.options.componentBuilders.buildDom(this.path, this.name, this.options, cache.client);
-		}
-		
-		this.ssrModule = await this.options.componentBuilders.instantiateSsrModule(this.serverComponent.component, this.path);
-		
-		if (this.options.useFileCache && !fileCacheExists) {
-			this.writeCacheFile();
-		}
-		
-		if (this.options.watch) {
-			this.cachedBundles.server = this.serverComponent.cache;
-			this.cachedBundles.client = this.clientComponent.cache;
-		}
-		
-		/*
-		NOTE this way of watching isn't the most efficient; we
-		could have a central component in charge of watching (e.g.
-		the engine) and only have one watcher per file.  as it is
-		now, multiple pages reference e.g. the Button component
-		and all set up a watch for it
-		*/
+		let {
+			client,
+			server,
+		} = await this.readBuildFile();
+
+		this.serverComponent = server;
+		this.clientComponent = client;
+
+		this.ssrModule = await instantiateSsrModule(this.serverComponent.component, this.path);
 		
 		if (this.options.watch) {
 			if (this.watcher) {
@@ -137,12 +109,8 @@ module.exports = class {
 			this.watcher.on("change", async (path) => {
 				let noCache = noCacheDependencyTypes.includes(fs(path).type);
 				
-				if (this.options.useFileCache) {
-					await this.deleteCacheFile();
-				}
-				
 				this.ready = false;
-				this.build(noCache);
+				this.build(true, noCache);
 			});
 		}
 		
@@ -155,7 +123,7 @@ module.exports = class {
 		this.ready = true;
 	}
 	
-	async build(noCache) {
+	async build(rebuild, noCache) {
 		if (noCache && this.pendingBuild) {
 			await this.pendingBuild;
 			
@@ -163,7 +131,7 @@ module.exports = class {
 		}
 		
 		if (!this.pendingBuild) {
-			this.pendingBuild = this._build(noCache);
+			this.pendingBuild = this._build(rebuild, noCache);
 		}
 		
 		await this.pendingBuild;
