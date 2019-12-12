@@ -68,6 +68,22 @@ module.exports = function(opts={}) {
 		dir: options.dir,
 		type: options.type,
 		
+		/*
+		bit of a hacky inclusion for watching/restarting the app server in dev
+		
+		we want to make sure the page build is done before restarting in case
+		the dep triggers both a page rebuild and an app restart, otherwise
+		the app will restart before the page gets a chance to rebuild
+		*/
+		
+		async awaitPendingBuilds() {
+			for (let path in pages) {
+				if (pages[path].pendingBuild) {
+					await pages[path].pendingBuild;
+				}
+			}
+		},
+		
 		async render(path, locals, callback) {
 			let sendLocals = {};
 			

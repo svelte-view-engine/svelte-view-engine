@@ -19,8 +19,6 @@ ${name} - the component name used in the var declaration above
 ${props} - a JSON-stringified object of props to render
 */
 
-let pathStartRe = /([A-Z]:|\/)/;
-
 /*
 saving a .scss file that gets @imported into the .svelte <style>
 triggers a rebuild, but for some reason doesn't use the new css
@@ -79,21 +77,7 @@ module.exports = class {
 					this.watcher.close();
 				}
 				
-				this.watcher = chokidar.watch(this.clientComponent.watchFiles.map((path) => {
-					/*
-					some paths have markers from rollup plugins - strip these for watching
-					some are also not absolute; these are also internal to rollup and can
-					be stripped
-					*/
-					
-					let start = path.match(pathStartRe);
-					
-					if (start) {
-						return path.substr(start.index);
-					} else {
-						return false;
-					}
-				}).filter(Boolean));
+				this.watcher = chokidar.watch(this.clientComponent.watchFiles);
 				
 				this.watcher.on("change", (path) => {
 					let noCache = noCacheDependencyTypes.includes(fs(path).type);
