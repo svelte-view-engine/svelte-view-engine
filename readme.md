@@ -146,6 +146,21 @@ You can use it in your components like so:
 </script>
 ```
 
+_rebuild
+========
+
+If `props._rebuild` is true, the page is rebuilt before being rendered.  This can be hooked up to the hard reload button in Chrome (via the Cache-Control header) to rebuild pages on hard reload:
+
+```
+app.use(function (req, res, next) {
+	if (req.headers["cache-control"] === "no-cache") {
+		res.locals._rebuild = true;
+	}
+	
+	next();
+});
+```
+
 Options
 =======
 

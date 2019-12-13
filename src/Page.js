@@ -118,6 +118,10 @@ module.exports = class {
 	}
 	
 	async render(locals) {
+		if (locals._rebuild) {
+			await this.build(true, true);
+		}
+		
 		if (!this.ready) {
 			await this.build();
 		}
