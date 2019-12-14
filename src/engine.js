@@ -22,6 +22,7 @@ module.exports = function(opts={}) {
 		buildConcurrency: os.cpus().length,
 		template: null,
 		buildScript: null,
+		buildDir: null,
 		watch: dev,
 		liveReload: dev,
 		liveReloadPort: 5000 + Math.floor(Math.random() * 60535),
@@ -42,6 +43,7 @@ module.exports = function(opts={}) {
 			port: options.liveReloadPort,
 		});
 		
+		// remove EventEmitter limit
 		liveReloadSocket.setMaxListeners(0);
 	}
 	

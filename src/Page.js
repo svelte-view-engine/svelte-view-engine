@@ -32,7 +32,8 @@ let noCacheDependencyTypes = ["sass", "scss"];
 in dev, we want to know which pages we're currently looking at so we can
 schedule them for priority rebuilding when a common dependency is changed
 
-this defines how long after rendering to consider a page no longer active
+this defines how long after the last websocket hearbeat to consider a page
+no longer active
 */
 
 let idleTimeout = 1000 * 15;
@@ -109,9 +110,7 @@ module.exports = class {
 					this.ready = false;
 					
 					if (!this.active) {
-						/*
-						give active pages a chance to get scheduled early
-						*/
+						// give active pages a chance to get scheduled first
 						await sleep(100);
 					}
 					
