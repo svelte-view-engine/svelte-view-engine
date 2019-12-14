@@ -191,11 +191,15 @@ Options
 
 `init`: Find all pages (files of `type` in `dir`) and build them on startup.  Defaults to `true`.  This avoids waiting for initial compilation the first time you request each page.
 
+`buildScript`: Path to build script.
+
+`buildDir`: Where to keep built pages.  This should be unique per project, e.g. `"/tmp/myAppSvelteBuild"`
+
 `buildConcurrency`: The maximum number of pages to build concurrently.  Defaults to the number of processor cores.
 
-`watch`: Watch component files and dependencies and auto-rebuild (defaults to `dev`).
+`watch`: Watch component files and dependencies and auto-rebuild.  Defaults to `dev`.
 
-`liveReload`: Auto reload the browser when component rebuilds (defaults to `dev`).
+`liveReload`: Auto reload the browser when component rebuilds.  Defaults to `dev`.
 
 `liveReloadPort`: WebSocket port to use for live reload message.  Defaults to a random port between 5000 and 65535 (this will throw an error if the port is in use, so if you're using a process manager it will restart the app until it finds an available port).
 

@@ -1,16 +1,9 @@
 let os = require("os");
 let ws = require("ws");
 let fs = require("flowfs");
+let remove = require("./utils/remove");
 let Page = require("./Page");
 let Template = require("./Template");
-
-function remove(array, item) {
-	let index;
-	
-	while ((index = array.indexOf(item)) !== -1) {
-		array.splice(index, 1);
-	}
-}
 
 module.exports = function(opts={}) {
 	let dev = process.env.NODE_ENV !== "production";
@@ -28,6 +21,7 @@ module.exports = function(opts={}) {
 		liveReloadPort: 5000 + Math.floor(Math.random() * 60535),
 		transpile: !dev,
 		minify: !dev,
+		verbose: true,
 		excludeLocals: [
 			"_locals",
 			"settings",
@@ -35,6 +29,12 @@ module.exports = function(opts={}) {
 		],
 		dev,
 	}, opts);
+	
+	function log(...args) {
+		if (options.verbose) {
+			console.log(...args);
+		}
+	}
 	
 	let liveReloadSocket;
 	
@@ -63,7 +63,7 @@ module.exports = function(opts={}) {
 		}).slice(0, options.buildConcurrency - inProgressBuilds.length);
 		
 		if (toBuild.length > 0) {
-			console.log("Building:");
+			log("Building:");
 		}
 		
 		for (let manifest of toBuild) {
@@ -73,7 +73,7 @@ module.exports = function(opts={}) {
 				noCache,
 			} = manifest;
 			
-			console.log(
+			log(
 				"\t"
 				+ page.relativePath
 				+ (rebuild ? " (rebuild)" : "")
@@ -86,11 +86,11 @@ module.exports = function(opts={}) {
 				page,
 				
 				promise: page.build(rebuild, noCache).then(function() {
-					console.log("Page " + page.relativePath + " finished, checking queue");
+					log("Page " + page.relativePath + " finished, checking queue");
 					remove(inProgressBuilds, inProgressBuild);
 					checkQueue();
 				}, function() {
-					console.log("Page " + page.relativePath + " errored, checking queue");
+					log("Page " + page.relativePath + " errored, checking queue");
 					remove(inProgressBuilds, inProgressBuild);
 					checkQueue();
 				}),
@@ -107,7 +107,7 @@ module.exports = function(opts={}) {
 			noCache,
 		};
 		
-		console.log(
+		log(
 			"Scheduling "
 			+ page.relativePath
 			+ (priority ? " (priority)" : "")
@@ -125,7 +125,7 @@ module.exports = function(opts={}) {
 	}
 	
 	async function build(page, rebuild, noCache) {
-		console.log(
+		log(
 			"Build immediate: "
 			+ page.relativePath
 			+ (rebuild ? " (rebuild)" : "")
@@ -137,27 +137,27 @@ module.exports = function(opts={}) {
 		let inProgressBuild = inProgressBuilds.find(b => b.page === page);
 		
 		if (inProgressBuild) {
-			console.log("Awaiting in-progress build");
+			log("Awaiting in-progress build");
 			
 			await inProgressBuild.promise;
 		}
 		
 		if (rebuild || !inProgressBuild) {
-			console.log("Scheduling build");
+			log("Scheduling build");
 			
 			scheduleBuild(page, true, rebuild, noCache);
 			
 			while (!(inProgressBuild = inProgressBuilds.find(b => b.page === page))) {
-				console.log("Waiting for build slot");
+				log("Waiting for build slot");
 				
 				await Promise.race(inProgressBuilds.map(b => b.promise));
 			}
 			
-			console.log("Awaiting build");
+			log("Awaiting build");
 			
 			await inProgressBuild.promise;
 			
-			console.log("Build complete");
+			log("Build complete");
 		}
 	}
 	
