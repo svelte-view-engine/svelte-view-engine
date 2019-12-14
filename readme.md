@@ -146,6 +146,23 @@ You can use it in your components like so:
 </script>
 ```
 
+Build scheduling
+================
+
+When you modify a component that's used by many pages, with a naive approach all of these pages would immediately see the change and rebuild themselves, meaning you might have to wait for the whole thing to process before seeing your changes.  Similarly, when building pages for the first time, trying to build all of them at once could easily crash a small server.
+
+To solve these issues there are two features: priority builds/active pages; and the `buildConcurrency` option.
+
+Active pages
+------------
+
+In development, pages keep a websocket open with a regular heartbeat to keep track of whether they're open in a browser (active).  On dependency changes, inactive pages wait for 100ms before scheduling themselves for rebuild, to allow active pages to see the change and schedule themselves first.  Active pages also pass a "priority" argument to the scheduler, which just means they get added to the "out" of the build queue.
+
+buildConcurrency
+----------------
+
+`buildConcurrency` defaults to `os.cpus().length`, and limits the number of concurrent build processes to save memory and maximise processor utilisation.
+
 _rebuild
 ========
 
