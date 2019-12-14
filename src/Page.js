@@ -39,8 +39,8 @@ no longer active
 let idleTimeout = 1000 * 15;
 
 module.exports = class {
-	constructor(engine, template, path, options, liveReloadSocket) {
-		this.engine = engine;
+	constructor(scheduler, template, path, options, liveReloadSocket) {
+		this.scheduler = scheduler;
 		this.template = template;
 		this.path = path;
 		this.relativePath = fs(path).pathFrom(options.dir);
@@ -114,7 +114,7 @@ module.exports = class {
 						await sleep(100);
 					}
 					
-					this.engine.scheduleBuild(this, this.active, true, noCache);
+					this.scheduler.scheduleBuild(this, this.active, true, noCache);
 				});
 			}
 			
@@ -147,11 +147,11 @@ module.exports = class {
 	
 	async render(locals) {
 		if (locals._rebuild) {
-			await this.engine.build(this, true, true);
+			await this.scheduler.build(this, true, true);
 		}
 		
 		if (!this.ready) {
-			await this.engine.build(this);
+			await this.scheduler.build(this);
 		}
 		
 		/*

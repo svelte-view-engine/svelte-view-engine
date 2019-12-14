@@ -1,9 +1,9 @@
 let os = require("os");
 let ws = require("ws");
 let fs = require("flowfs");
-let remove = require("./utils/remove");
 let Page = require("./Page");
 let Template = require("./Template");
+let buildScheduler = require("./buildScheduler");
 
 module.exports = function(opts={}) {
 	let dev = process.env.NODE_ENV !== "production";
@@ -30,143 +30,26 @@ module.exports = function(opts={}) {
 		dev,
 	}, opts);
 	
-	function log(...args) {
-		if (options.verbose) {
-			console.log(...args);
-		}
-	}
+	let template = new Template(options.template, {
+		watch: options.watch,
+	});
 	
+	let scheduler = buildScheduler(options);
 	let liveReloadSocket;
+	let pages = {};
 	
 	if (options.liveReload) {
 		liveReloadSocket = new ws.Server({
 			port: options.liveReloadPort,
 		});
 		
-		// remove EventEmitter limit
+		// remove default EventEmitter limit
 		liveReloadSocket.setMaxListeners(0);
-	}
-	
-	let pages = {};
-	let inProgressBuilds = [];
-	let buildQueue = [];
-	
-	let template = new Template(options.template, {
-		watch: options.watch,
-	});
-	
-	function checkQueue() {
-		let toBuild = buildQueue.filter(function({page}) {
-			return !inProgressBuilds.find(function(inProgressBuild) {
-				return inProgressBuild.page === page;
-			});
-		}).slice(0, options.buildConcurrency - inProgressBuilds.length);
-		
-		if (toBuild.length > 0) {
-			log("Building:");
-		}
-		
-		for (let manifest of toBuild) {
-			let {
-				page,
-				rebuild,
-				noCache,
-			} = manifest;
-			
-			log(
-				"\t"
-				+ page.relativePath
-				+ (rebuild ? " (rebuild)" : "")
-				+ (noCache ? " (no cache)" : "")
-			);
-			
-			remove(buildQueue, manifest);
-			
-			let inProgressBuild = {
-				page,
-				
-				promise: page.build(rebuild, noCache).then(function() {
-					log("Page " + page.relativePath + " finished, checking queue");
-					remove(inProgressBuilds, inProgressBuild);
-					checkQueue();
-				}, function() {
-					log("Page " + page.relativePath + " errored, checking queue");
-					remove(inProgressBuilds, inProgressBuild);
-					checkQueue();
-				}),
-			};
-			
-			inProgressBuilds.push(inProgressBuild);
-		}
-	}
-	
-	function scheduleBuild(page, priority, rebuild, noCache) {
-		let manifest = {
-			page,
-			rebuild,
-			noCache,
-		};
-		
-		log(
-			"Scheduling "
-			+ page.relativePath
-			+ (priority ? " (priority)" : "")
-			+ (rebuild ? " (rebuild)" : "")
-			+ (noCache ? " (no cache)" : "")
-		);
-		
-		if (priority) {
-			buildQueue.unshift(manifest);
-		} else {
-			buildQueue.push(manifest);
-		}
-		
-		checkQueue();
-	}
-	
-	async function build(page, rebuild, noCache) {
-		log(
-			"Build immediate: "
-			+ page.relativePath
-			+ (rebuild ? " (rebuild)" : "")
-			+ (noCache ? " (no cache)" : "")
-		);
-		
-		buildQueue = buildQueue.filter(manifest => manifest.page !== page);
-		
-		let inProgressBuild = inProgressBuilds.find(b => b.page === page);
-		
-		if (inProgressBuild) {
-			log("Awaiting in-progress build");
-			
-			await inProgressBuild.promise;
-		}
-		
-		if (rebuild || !inProgressBuild) {
-			log("Scheduling build");
-			
-			scheduleBuild(page, true, rebuild, noCache);
-			
-			while (!(inProgressBuild = inProgressBuilds.find(b => b.page === page))) {
-				log("Waiting for build slot");
-				
-				await Promise.race(inProgressBuilds.map(b => b.promise));
-			}
-			
-			log("Awaiting build");
-			
-			await inProgressBuild.promise;
-			
-			log("Build complete");
-		}
 	}
 	
 	function createPage(path) {
 		return new Page(
-			{
-				scheduleBuild,
-				build,
-			},
+			scheduler,
 			template,
 			path,
 			options,
@@ -182,7 +65,7 @@ module.exports = function(opts={}) {
 			
 			pages[node.path] = page;
 			
-			scheduleBuild(page);
+			scheduler.scheduleBuild(page);
 		}
 	}
 	
@@ -203,9 +86,7 @@ module.exports = function(opts={}) {
 		*/
 		
 		async awaitPendingBuilds() {
-			while (inProgressBuilds.length > 0) {
-				await inProgressBuilds[0].promise;
-			}
+			await scheduler.awaitPendingBuilds();
 		},
 		
 		async render(path, locals, callback) {
