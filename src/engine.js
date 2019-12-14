@@ -1,7 +1,16 @@
+let os = require("os");
 let ws = require("ws");
 let fs = require("flowfs");
 let Page = require("./Page");
 let Template = require("./Template");
+
+function remove(array, item) {
+	let index;
+	
+	while ((index = array.indexOf(item)) !== -1) {
+		array.splice(index, 1);
+	}
+}
 
 module.exports = function(opts={}) {
 	let dev = process.env.NODE_ENV !== "production";
@@ -10,6 +19,7 @@ module.exports = function(opts={}) {
 		dir: null,
 		type: "html",
 		init: true,
+		buildConcurrency: os.cpus().length,
 		template: null,
 		buildScript: null,
 		watch: dev,
@@ -31,16 +41,135 @@ module.exports = function(opts={}) {
 		liveReloadSocket = new ws.Server({
 			port: options.liveReloadPort,
 		});
+		
+		liveReloadSocket.setMaxListeners(0);
 	}
 	
 	let pages = {};
+	let inProgressBuilds = [];
+	let buildQueue = [];
 	
 	let template = new Template(options.template, {
 		watch: options.watch,
 	});
 	
+	function checkQueue() {
+		let toBuild = buildQueue.filter(function({page}) {
+			return !inProgressBuilds.find(function(inProgressBuild) {
+				return inProgressBuild.page === page;
+			});
+		}).slice(0, options.buildConcurrency - inProgressBuilds.length);
+		
+		if (toBuild.length > 0) {
+			console.log("Building:");
+		}
+		
+		for (let manifest of toBuild) {
+			let {
+				page,
+				rebuild,
+				noCache,
+			} = manifest;
+			
+			console.log(
+				"\t"
+				+ page.relativePath
+				+ (rebuild ? " (rebuild)" : "")
+				+ (noCache ? " (no cache)" : "")
+			);
+			
+			remove(buildQueue, manifest);
+			
+			let inProgressBuild = {
+				page,
+				
+				promise: page.build(rebuild, noCache).then(function() {
+					console.log("Page " + page.relativePath + " finished, checking queue");
+					remove(inProgressBuilds, inProgressBuild);
+					checkQueue();
+				}, function() {
+					console.log("Page " + page.relativePath + " errored, checking queue");
+					remove(inProgressBuilds, inProgressBuild);
+					checkQueue();
+				}),
+			};
+			
+			inProgressBuilds.push(inProgressBuild);
+		}
+	}
+	
+	function scheduleBuild(page, priority, rebuild, noCache) {
+		let manifest = {
+			page,
+			rebuild,
+			noCache,
+		};
+		
+		console.log(
+			"Scheduling "
+			+ page.relativePath
+			+ (priority ? " (priority)" : "")
+			+ (rebuild ? " (rebuild)" : "")
+			+ (noCache ? " (no cache)" : "")
+		);
+		
+		if (priority) {
+			buildQueue.unshift(manifest);
+		} else {
+			buildQueue.push(manifest);
+		}
+		
+		checkQueue();
+	}
+	
+	async function build(page, rebuild, noCache) {
+		console.log(
+			"Build immediate: "
+			+ page.relativePath
+			+ (rebuild ? " (rebuild)" : "")
+			+ (noCache ? " (no cache)" : "")
+		);
+		
+		buildQueue = buildQueue.filter(manifest => manifest.page !== page);
+		
+		let inProgressBuild = inProgressBuilds.find(b => b.page === page);
+		
+		if (inProgressBuild) {
+			console.log("Awaiting in-progress build");
+			
+			await inProgressBuild.promise;
+		}
+		
+		if (rebuild || !inProgressBuild) {
+			console.log("Scheduling build");
+			
+			scheduleBuild(page, true, rebuild, noCache);
+			
+			while (!(inProgressBuild = inProgressBuilds.find(b => b.page === page))) {
+				console.log("Waiting for build slot");
+				
+				await Promise.race(inProgressBuilds.map(b => b.promise));
+			}
+			
+			console.log("Awaiting build");
+			
+			await inProgressBuild.promise;
+			
+			console.log("Build complete");
+		}
+	}
+	
 	function createPage(path) {
-		return new Page(template, path, options, liveReloadSocket);
+		return new Page(
+			{
+				scheduleBuild,
+				build,
+			},
+			template,
+			path,
+			options,
+			liveReloadSocket,
+		);
 	}
 	
 	async function prebuild() {
@@ -51,12 +180,7 @@ module.exports = function(opts={}) {
 			
 			pages[node.path] = page;
 			
-			try {
-				await page.build();
-			} catch (e) {
-				console.error("Error pre-building page " + path);
-				console.error(e);
-			}
+			scheduleBuild(page);
 		}
 	}
 	
@@ -77,10 +201,8 @@ module.exports = function(opts={}) {
 		*/
 		
 		async awaitPendingBuilds() {
-			for (let path in pages) {
-				if (pages[path].pendingBuild) {
-					await pages[path].pendingBuild;
-				}
+			while (inProgressBuilds.length > 0) {
+				await inProgressBuilds[0].promise;
 			}
 		},
 		
