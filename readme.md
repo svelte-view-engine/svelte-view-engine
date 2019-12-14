@@ -156,12 +156,12 @@ To solve these issues there are two features: priority builds/active pages; and 
 Active pages
 ------------
 
-In development, pages keep a websocket open with a regular heartbeat to keep track of whether they're open in a browser (active).  On dependency changes, inactive pages wait for 100ms before scheduling themselves for rebuild, to allow active pages to see the change and schedule themselves first.  Active pages also pass a "priority" argument to the scheduler, which just means they get added to the "out" of the build queue.
+In development, pages keep a websocket open with a regular heartbeat to keep track of whether they're open in a browser (active).  On dependency changes, inactive pages wait for 100ms before scheduling themselves for rebuild, to allow active pages to see the change and schedule themselves first.  Active pages also pass a "priority" argument to the scheduler, which just means they get added straight to the "out" end of the build queue.
 
 buildConcurrency
 ----------------
 
-`buildConcurrency` defaults to `os.cpus().length`, and limits the number of concurrent build processes to save memory and maximise processor utilisation.
+`buildConcurrency` defaults to `os.cpus().length`, and limits the number of concurrent build processes to save memory while maximising CPU utilisation.
 
 _rebuild
 ========
