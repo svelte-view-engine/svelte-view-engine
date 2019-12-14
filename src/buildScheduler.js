@@ -37,7 +37,7 @@ module.exports = function(options) {
 			} = manifest;
 			
 			log(
-				"\t"
+				"    - "
 				+ page.relativePath
 				+ (rebuild ? " (rebuild)" : "")
 				+ (noCache ? " (no cache)" : "")
