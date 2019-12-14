@@ -31,7 +31,7 @@ app.get("/", (req, res) => {
 });
 ```
 
-It can also be used outside of Express.  `svelteViewEngine(options)` returns a function `(path, locals[, callback])`.  If `callback` is supplied it is called with `(error, html)`, otherwise a promise is returned.
+It can also be used outside of Express.  `svelteViewEngine(options)` returns an object with `render(path, locals[, callback])`.  If `callback` is supplied it is called with `(error, html)`, otherwise a promise is returned.
 
 Design
 ======
@@ -166,7 +166,7 @@ buildConcurrency
 _rebuild
 ========
 
-If `props._rebuild` is true, the page is rebuilt before being rendered.  This can be hooked up to the hard reload button in Chrome (via the Cache-Control header) to rebuild pages on hard reload:
+If `props._rebuild` is true, the page is rebuilt before being rendered.  This can be hooked up to the hard reload feature in Chrome via the Cache-Control header:
 
 ```
 app.use(function (req, res, next) {
@@ -185,18 +185,22 @@ Options
 
 `template`: Path to root template file.
 
-`dir` (for use with `init`, see below): Pages directory (defaults to `"./pages"`).  This should be the same as the "views" option in Express.
+`dir`: Pages directory.
 
-`type` (for use with `init`, see below): File extension (defaults to `"html"`).  It's recommended to use a different extension for pages and sub-components, so that svelte-view-engine doesn't unnecessarily create pages for sub-components it finds in the pages directory (e.g. .html for pages and .svelte for sub-components).
+`type`: File extension (defaults to `"html"`).  It's recommended to use a different extension for pages and components, so that svelte-view-engine doesn't unnecessarily build non-page components it finds in the pages directory (e.g. .html for pages and .svelte for other components).
 
 `init`: Find all pages (files of `type` in `dir`) and build them on startup.  Defaults to `true`.  This avoids waiting for initial compilation the first time you request each page.
 
-`useFileCache`: If specified, a directory to store cached versions of pages to avoid rebuilding unmodified pages on app restarts.
+`buildConcurrency`: The maximum number of pages to build concurrently.  Defaults to the number of processor cores.
 
 `watch`: Watch component files and dependencies and auto-rebuild (defaults to `dev`).
 
 `liveReload`: Auto reload the browser when component rebuilds (defaults to `dev`).
 
 `liveReloadPort`: WebSocket port to use for live reload message.  Defaults to a random port between 5000 and 65535 (this will throw an error if the port is in use, so if you're using a process manager it will restart the app until it finds an available port).
+
+`minify`: Passed through to the build script.  Defaults to `dev`.
+
+`transpile`: Passed through to the build script.  Defaults to `dev`.
 
 `excludeLocals`: Array of object keys to exclude from the locals that get passed to the component.  Some keys are added by Express, and may be unnecessary and/or security concerns if exposed.  This defaults to `["_locals", "settings", "cache"]` and is overwritten (not merged) with the supplied setting.
