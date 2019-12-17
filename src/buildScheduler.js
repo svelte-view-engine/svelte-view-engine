@@ -49,7 +49,12 @@ module.exports = function(options) {
 				page,
 				
 				promise: page.build(rebuild, noCache).finally(function() {
-					log("Page " + page.relativePath + " finished, checking queue");
+					log(
+						"Page "
+						+ page.relativePath
+						+ " finished, checking queue"
+					);
+					
 					remove(inProgressBuilds, inProgressBuild);
 					checkQueue();
 				}),
@@ -83,6 +88,12 @@ module.exports = function(options) {
 		checkQueue();
 	}
 	
+	function findInProgressBuild(page) {
+		return inProgressBuilds.find(function(build) {
+			return build.page === page;
+		});
+	}
+	
 	async function build(page, rebuild, noCache) {
 		log(
 			"Build next: "
@@ -91,32 +102,44 @@ module.exports = function(options) {
 			+ (noCache ? " (no cache)" : "")
 		);
 		
-		buildQueue = buildQueue.filter(manifest => manifest.page !== page);
+		// drop any previously scheduled builds for this page
 		
-		let inProgressBuild = inProgressBuilds.find(b => b.page === page);
+		buildQueue = buildQueue.filter(function(manifest) {
+			return manifest.page !== page;
+		});
+		
+		let inProgressBuild = findInProgressBuild(page);
 		
 		if (inProgressBuild) {
-			log("Awaiting in-progress build");
+			log(page.relativePath + ": awaiting in-progress build");
 			
-			await inProgressBuild.promise;
+			try {
+				await inProgressBuild.promise;
+			} catch (e) {
+				console.error(e);
+			}
 		}
 		
 		if (rebuild || !inProgressBuild) {
-			log("Scheduling build");
+			log(page.relativePath + ": scheduling build");
 			
 			scheduleBuild(page, true, rebuild, noCache);
 			
-			while (!(inProgressBuild = inProgressBuilds.find(b => b.page === page))) {
-				log("Waiting for build slot");
-				
-				await Promise.race(inProgressBuilds.map(b => b.promise));
+			try {
+				while (!(inProgressBuild = findInProgressBuild(page))) {
+					log(page.relativePath + ": waiting for build slot");
+					
+					await Promise.race(inProgressBuilds.map(b => b.promise));
+				}
+			} catch (e) {
+				console.error(e);
 			}
 			
-			log("Awaiting build");
+			log(page.relativePath + ": awaiting build");
 			
 			await inProgressBuild.promise;
 			
-			log("Build complete");
+			log(page.relativePath + ": build complete");
 		}
 	}
 	
@@ -125,8 +148,12 @@ module.exports = function(options) {
 		build,
 		
 		async awaitPendingBuilds() {
-			while (inProgressBuilds.length > 0) {
-				await inProgressBuilds[0].promise;
+			try {
+				while (inProgressBuilds.length > 0) {
+					await inProgressBuilds[0].promise;
+				}
+			} catch (e) {
+				console.error(e);
 			}
 		},
 	};

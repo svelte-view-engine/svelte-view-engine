@@ -91,10 +91,10 @@ module.exports = class {
 				client,
 				server,
 			} = await this.buildFile.readJson();
-	
+			
 			this.serverComponent = server;
 			this.clientComponent = client;
-	
+			
 			this.ssrModule = await instantiateSsrModule(this.serverComponent.component, this.path);
 			
 			if (this.options.watch) {
@@ -146,107 +146,107 @@ module.exports = class {
 	}
 	
 	async render(locals) {
-		if (locals._rebuild) {
-			await this.scheduler.build(this, true, true);
-		}
-		
-		if (!this.ready) {
-			await this.scheduler.build(this);
-		}
-		
-		/*
-		set the payload; render; then unset
-		
-		the payload is global -- this is required to get access to the current
-		value from within the compiled serverside component, and also to make the
-		same module (./payload) work for both server- and client-side code.
-		*/
-		
-		payload.set(locals);
-		
-		/*
-		note that we don't use .css from render() - this only includes CSS for
-		child components that happen to be rendered this time.  we use
-		serverComponent.css which has CSS for all components that are imported
-		(ie all components that could possibly be rendered)
-		*/
-		
-		let head;
-		let html;
-		let css;
-		
 		try {
-			({head, html} = this.ssrModule.render());
-			({css} = this.serverComponent);
+			if (locals._rebuild) {
+				await this.scheduler.build(this, true, true);
+			}
+			
+			if (!this.ready) {
+				await this.scheduler.build(this);
+			}
+			
+			/*
+			set the payload; render; then unset
+			
+			the payload is global -- this is required to get access to the current
+			value from within the compiled serverside component, and also to make the
+			same module (./payload) work for both server- and client-side code.
+			*/
+			
+			payload.set(locals);
+			
+			/*
+			note that we don't use .css from render() - this only includes CSS for
+			child components that happen to be rendered this time.  we use
+			serverComponent.css which has CSS for all components that are imported
+			(ie all components that could possibly be rendered)
+			*/
+			
+			let {head, html} = this.ssrModule.render();
+			let {css} = this.serverComponent;
+			let {js} = this.clientComponent;
+			
+			let str = "";
+			let props = JSON.stringify(locals);
+			
+			await this.template.render({
+				raw: (content) => {
+					str += content;
+				},
+				
+				head: () => {
+					str += head;
+					
+					if (this.options.liveReload) {
+						str += `
+							<script>
+								var socket;
+								
+								function createSocket() {
+									socket = new WebSocket("ws://" + location.hostname + ":${this.options.liveReloadPort}");
+									
+									socket.addEventListener("message", function(message) {
+										if (message.data === "${this.path}") {
+											location.reload();
+										}
+									});
+									
+									socket.addEventListener("close", function() {
+										setTimeout(createSocket, 500);
+									});
+								}
+								
+								function heartbeat() {
+									socket.send("${this.path}");
+								}
+								
+								createSocket();
+								
+								setInterval(heartbeat, 1000);
+							</script>
+						`;
+					}
+				},
+				
+				html: () => {
+					str += html;
+				},
+				
+				css: () => {
+					str += css.code;
+				},
+				
+				js: () => {
+					str += js.code;
+				},
+				
+				name: () => {
+					str += this.name;
+				},
+				
+				props: () => {
+					str += props;
+				},
+			});
+			
+			return str;
+		} catch (e) {
+			this.ready = false;
+			this.buildFile.delete();
+			
+			throw e;
 		} finally {
 			payload.set(null);
 		}
-		
-		let {js} = this.clientComponent;
-		
-		let str = "";
-		let props = JSON.stringify(locals);
-		
-		await this.template.render({
-			raw: (content) => {
-				str += content;
-			},
-			
-			head: () => {
-				str += head;
-				
-				if (this.options.liveReload) {
-					str += `
-						<script>
-							var socket;
-							
-							function createSocket() {
-								socket = new WebSocket("ws://" + location.hostname + ":${this.options.liveReloadPort}");
-								
-								socket.addEventListener("message", function(message) {
-									if (message.data === "${this.path}") {
-										location.reload();
-									}
-								});
-								
-								socket.addEventListener("close", function() {
-									setTimeout(createSocket, 500);
-								});
-							}
-							
-							function heartbeat() {
-								socket.send("${this.path}");
-							}
-							
-							createSocket();
-							
-							setInterval(heartbeat, 1000);
-						</script>
-					`;
-				}
-			},
-			
-			html: () => {
-				str += html;
-			},
-			
-			css: () => {
-				str += css.code;
-			},
-			
-			js: () => {
-				str += js.code;
-			},
-			
-			name: () => {
-				str += this.name;
-			},
-			
-			props: () => {
-				str += props;
-			},
-		});
-		
-		return str;
 	}
 }

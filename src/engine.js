@@ -92,18 +92,20 @@ module.exports = function(opts={}) {
 		async render(path, locals, callback) {
 			let sendLocals = {};
 			
+			if (!pages[path]) {
+				pages[path] = createPage(path);
+			}
+			
+			let page = pages[path];
+			
 			for (let p in locals) {
 				if (!options.excludeLocals.includes(p)) {
 					sendLocals[p] = locals[p];
 				}
 			}
 			
-			if (!pages[path]) {
-				pages[path] = createPage(path);
-			}
-			
 			try {
-				let result = await pages[path].render(sendLocals);
+				let result = await page.render(sendLocals);
 				
 				if (callback) {
 					callback(null, result);
@@ -111,7 +113,6 @@ module.exports = function(opts={}) {
 					return result;
 				}
 			} catch (e) {
-				delete pages[path];
 				
 				if (callback) {
 					callback(e);
