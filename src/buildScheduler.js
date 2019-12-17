@@ -20,9 +20,7 @@ module.exports = function(options) {
 	
 	function checkQueue() {
 		let toBuild = buildQueue.filter(function({page}) {
-			return !inProgressBuilds.find(function(inProgressBuild) {
-				return inProgressBuild.page === page;
-			});
+			return !inProgressBuilds.find(b => b.page === page);
 		}).slice(0, options.buildConcurrency - inProgressBuilds.length);
 		
 		if (toBuild.length > 0) {
@@ -89,9 +87,7 @@ module.exports = function(options) {
 	}
 	
 	function findInProgressBuild(page) {
-		return inProgressBuilds.find(function(build) {
-			return build.page === page;
-		});
+		return inProgressBuilds.find(b => b.page === page);
 	}
 	
 	async function build(page, rebuild, noCache) {
@@ -104,9 +100,7 @@ module.exports = function(options) {
 		
 		// drop any previously scheduled builds for this page
 		
-		buildQueue = buildQueue.filter(function(manifest) {
-			return manifest.page !== page;
-		});
+		buildQueue = buildQueue.filter(manifest => manifest.page !== page);
 		
 		let inProgressBuild = findInProgressBuild(page);
 		
