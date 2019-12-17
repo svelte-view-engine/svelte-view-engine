@@ -113,7 +113,6 @@ module.exports = function(opts={}) {
 					return result;
 				}
 			} catch (e) {
-				
 				if (callback) {
 					callback(e);
 				} else {
