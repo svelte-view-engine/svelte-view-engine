@@ -1,6 +1,6 @@
 {
 	"name": "svelte-view-engine",
-	"version": "7.7.0",
+	"version": "7.7.1",
 	"dependencies": {
 		"chokidar": "^3.0.2",
 		"flowfs": "^3.7.0",
