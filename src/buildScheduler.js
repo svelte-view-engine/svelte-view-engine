@@ -141,6 +141,10 @@ module.exports = function(options) {
 		scheduleBuild,
 		build,
 		
+		hasPendingBuilds() {
+			return inProgressBuilds.length > 0;
+		},
+		
 		async awaitPendingBuilds() {
 			try {
 				while (inProgressBuilds.length > 0) {

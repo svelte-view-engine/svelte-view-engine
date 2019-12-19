@@ -89,6 +89,10 @@ module.exports = function(opts={}) {
 			await scheduler.awaitPendingBuilds();
 		},
 		
+		hasPendingBuilds() {
+			return scheduler.hasPendingBuilds();
+		}
+		
 		async render(path, locals, callback) {
 			let sendLocals = {};
 			
