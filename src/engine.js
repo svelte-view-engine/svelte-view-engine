@@ -21,6 +21,7 @@ module.exports = function(opts={}) {
 		liveReloadPort: 5000 + Math.floor(Math.random() * 60535),
 		transpile: !dev,
 		minify: !dev,
+		saveJs: dev,
 		verbose: true,
 		excludeLocals: [
 			"_locals",
@@ -76,14 +77,6 @@ module.exports = function(opts={}) {
 	return {
 		dir: options.dir,
 		type: options.type,
-		
-		/*
-		bit of a hacky inclusion for watching/restarting the app server in dev
-		
-		we want to make sure the page build is done before restarting in case
-		the dep triggers both a page rebuild and an app restart, otherwise
-		the app will restart before the page gets a chance to rebuild
-		*/
 		
 		async awaitPendingBuilds() {
 			await scheduler.awaitPendingBuilds();
