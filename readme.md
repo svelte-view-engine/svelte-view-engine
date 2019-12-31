@@ -208,3 +208,5 @@ Options
 `transpile`: Passed through to the build script.  Defaults to `dev`.
 
 `excludeLocals`: Array of object keys to exclude from the locals that get passed to the component.  Some keys are added by Express, and may be unnecessary and/or security concerns if exposed.  This defaults to `["_locals", "settings", "cache"]` and is overwritten (not merged) with the supplied setting.
+
+`saveJs`: Save component js in .client.js and .server.js files in the build dir.  Defaults to `dev`.
