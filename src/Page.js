@@ -176,70 +176,46 @@ module.exports = class {
 			let {css} = this.serverComponent;
 			let {js} = this.clientComponent;
 			
-			let str = "";
 			let props = JSON.stringify(locals);
 			
-			await this.template.render({
-				raw: (content) => {
-					str += content;
-				},
-				
-				head: () => {
-					str += head;
-					
-					if (this.options.liveReload) {
-						str += `
-							<script>
-								var socket;
-								
-								function createSocket() {
-									socket = new WebSocket("ws://" + location.hostname + ":${this.options.liveReloadPort}");
-									
-									socket.addEventListener("message", function(message) {
-										if (message.data === "${this.path}") {
-											location.reload();
-										}
-									});
-									
-									socket.addEventListener("close", function() {
-										setTimeout(createSocket, 500);
-									});
+			if (this.options.liveReload) {
+				head += `
+					<script>
+						var socket;
+						
+						function createSocket() {
+							socket = new WebSocket("ws://" + location.hostname + ":${this.options.liveReloadPort}");
+							
+							socket.addEventListener("message", function(message) {
+								if (message.data === "${this.path}") {
+									location.reload();
 								}
-								
-								function heartbeat() {
-									socket.send("${this.path}");
-								}
-								
-								createSocket();
-								
-								setInterval(heartbeat, 1000);
-							</script>
-						`;
-					}
-				},
-				
-				html: () => {
-					str += html;
-				},
-				
-				css: () => {
-					str += css.code;
-				},
-				
-				js: () => {
-					str += js.code;
-				},
-				
-				name: () => {
-					str += this.name;
-				},
-				
-				props: () => {
-					str += props;
-				},
-			});
+							});
+							
+							socket.addEventListener("close", function() {
+								setTimeout(createSocket, 500);
+							});
+						}
+						
+						function heartbeat() {
+							socket.send("${this.path}");
+						}
+						
+						createSocket();
+						
+						setInterval(heartbeat, 1000);
+					</script>
+				`;
+			}
 			
-			return str;
+			return await this.template.render({
+				head,
+				html,
+				css: css.code,
+				js: js.code,
+				name: this.name,
+				props,
+			});
 		} catch (e) {
 			this.ready = false;
 			this.buildFile.delete();

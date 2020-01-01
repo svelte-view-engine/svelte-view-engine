@@ -69,17 +69,21 @@ module.exports = class {
 		this.ready = true;
 	}
 	
-	async render(fns) {
+	async render(replacements) {
+		let str = "";
+		
 		if (!this.ready) {
 			await this.load();
 		}
 		
 		for (let section of this.sections) {
-			if (!(section.type in fns)) {
-				throw new Error(`Template - no render function defined for placeholder '${section.type}'`);
+			if (section.type in replacements) {
+				str += replacements[section.type];
+			} else {
+				str += section.content;
 			}
-			
-			fns[section.type](section.content);
 		}
+		
+		return str;
 	}
 }
