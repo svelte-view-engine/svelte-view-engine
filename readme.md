@@ -49,7 +49,7 @@ Root template
 
 Svelte components and `<slot>`s take the place of, for example, Pug layouts and mixins for all your re-use and composition needs, but pages still need a bit of surrounding boilerplate HTML that you can't define in Svelte -- `<!doctype>`, `<html>` etc -- and you also need a few lines of JS to instantiate the component on the client.
 
-This skeleton is defined a single root template that's used for all pages, with `${}` placeholders for the page content:
+This code is defined in a single root template that's used for all pages, with `${}` placeholders for the page content:
 
 ```html
 // template.html
@@ -83,10 +83,10 @@ This skeleton is defined a single root template that's used for all pages, with 
 - `head` is the SSR-rendered markup from any `<svelte:head>` tags
 - `css` is the CSS
 - `html` is the SSR-rendered component markup
-- `js` is the component code returned by `componentBuilders.dom`
-- `name` is the basename of the .svelte file, and is used as the client-side component class name
-- `props` is a JSON-stringified version of the object you pass to `res.render()`
-`include [filename]` is replaced with the contents of that file
+- `js` is the clientside component returned by the build script
+- `name` is the basename of the .html file, and is used as the clientside component class name
+- `props` is a JSON-stringified version of the object you pass to `res.render()`, and is used by `svelte-view-engine/payload`
+`include /path/to/file` is replaced with the contents of the file
 
 Build script
 ============
@@ -103,18 +103,18 @@ This is a separate script, as opposed to a passed-in function, so that the build
 }
 ```
 
-It should compile the component and place the output in the file at `buildPath` in the form of:
+It should compile the component and write JSON out to `buildPath` with the following form:
 
 ```
 {
 	client: {
 		cache, // options.cache && bundle.cache
-		js, // client-side js
+		js, // clientside js
 		watchFiles, // list of paths to watch for changes
 	},
 	server: {
 		cache, // options.cache && bundle.cache
-		component, // server-side js
+		component, // serverside js
 		css, // css
 	}
 }
@@ -123,7 +123,9 @@ It should compile the component and place the output in the file at `buildPath` 
 Props/payload
 =============
 
-The svelte-view-engine/payload module exposes a global variable called `props` that makes the view locals available to pages, server-side and client-side.  To use the data client-side, set the `props` variable in your root template before the `${js}` placeholder:
+The `svelte-view-engine/payload` module uses a global variable called `props` to make the view locals available to pages.
+
+svelte-view-engine makes it available to pages at SSR render time.  To use the data clientside, set the `props` variable in your root template before the `${js}` placeholder:
 
 ```html
 ...
