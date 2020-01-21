@@ -38,11 +38,11 @@ It can also be used outside of Express.  `svelteViewEngine(options)` returns an 
 Design
 ======
 
-The motivation behind svelte-view-engine is to be able to build the view layer of a web app using a hierarchy of Svelte components and as little else as possible, while not having to "buy in" to a full app framework.
+The motivation behind svelte-view-engine is to be able to build the view layer of a web app using a hierarchy of Svelte components and as little else as possible, while not having to buy in to a full app framework.
 
 It is therefore a view engine (like Pug or EJS) as opposed to an app framework (like [Sapper](https://sapper.svelte.dev) or [Next.js](https://nextjs.org)).
 
-svelte-view-engine doesn't know how to compile Svelte components itself; you pass it the path to a build script.  This allows you to use your existing Svelte build process, or write one for your specific use case.  See the example app for an example.
+svelte-view-engine doesn't know how to compile Svelte components itself; you pass it the path to a build script.  This allows you to use your existing Svelte build process, or write one for your specific use case.  See the [example app](https://github.com/user896724/sve) for an example of this.
 
 Root template
 =============
@@ -149,9 +149,41 @@ You can then use the data in your pages like so:
 <script>
 	import payload from "svelte-view-engine/payload";
 	
-	let data = payload.get();
+	let {user} = payload.get();
 </script>
 ```
+
+You can also just use `export let` as normal (in which case you should also pass the global `props` variable as the `props` option in your root template):
+
+```html
+// Root template
+
+<script>
+	props = ${props};
+	
+	${js}
+	
+	new ${name}({
+		target: document.body,
+		props,
+		hydrate: true,
+	});
+</script>
+```
+
+```html
+// Page
+
+<script>
+	export let user;
+</script>
+```
+
+When to use `payload` instead of `export let`:
+
+- You want to access the props from a sub-component without having to pass them in explicitly from the top-level page component.
+
+- You need to manipulate the data somehow before using it, for example to stringify it and then re-parse it using a JSON reviver function that depends on your app code.  In this case you would write a module that reads the payload and exposes a modified version, then use that module in your pages.
 
 Build scheduling
 ================
@@ -200,9 +232,9 @@ Options
 
 `buildScript`: Path to build script.
 
-`buildDir`: Where to keep built pages.  This should be unique per project, e.g. `"/tmp/myAppSvelteBuild"`.  It can also be within the project directory, I just prefer to keep it separate.
+`buildDir`: Where to keep built pages.  This must be unique per project, e.g. `"/tmp/myAppSvelteBuild"` or somewhere within the project directory.
 
-`buildConcurrency`: The maximum number of pages to build concurrently.  Defaults to the number of processor cores.
+`buildConcurrency`: The maximum number of pages to build concurrently.  Defaults to the number of processor cores available.
 
 `watch`: Watch component files and dependencies and auto-rebuild.  Defaults to `dev`.
 
@@ -216,4 +248,4 @@ Options
 
 `excludeLocals`: Array of object keys to exclude from the locals that get passed to the component.  Some keys are added by Express, and may be unnecessary and/or security concerns if exposed.  This defaults to `["_locals", "settings", "cache"]` and is overwritten (not merged) with the supplied setting.
 
-`saveJs`: Save component js in .client.js and .server.js files in the build dir.  Defaults to `dev`.  This is sometimes useful for looking up line numbers from server error logs when the SSR component render function throws an error.
+`saveJs`: Save component JS in .client.js and .server.js files in the build dir.  Defaults to `dev`.  This is sometimes useful for looking up line numbers from server error logs when the SSR component render function throws an error.

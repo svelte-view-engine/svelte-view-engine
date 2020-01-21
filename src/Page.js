@@ -172,7 +172,7 @@ module.exports = class {
 			(ie all components that could possibly be rendered)
 			*/
 			
-			let {head, html} = this.ssrModule.render();
+			let {head, html} = this.ssrModule.render(locals);
 			let {css} = this.serverComponent;
 			let {js} = this.clientComponent;
 			
