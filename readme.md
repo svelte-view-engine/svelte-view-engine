@@ -67,12 +67,13 @@ This code is defined in a single root template that's used for all pages, with `
 	<body>
 		${html}
 		<script>
+			props = ${props};
+			
 			${js}
-		</script>
-		<script>
+			
 			new ${name}({
 				target: document.body,
-				props: ${props},
+				props: props,
 				hydrate: true,
 			});
 		</script>
@@ -80,13 +81,13 @@ This code is defined in a single root template that's used for all pages, with `
 </html>
 ```
 
-- `head` is the SSR-rendered markup from any `<svelte:head>` tags
-- `css` is the CSS
-- `html` is the SSR-rendered component markup
-- `js` is the clientside component returned by the build script
-- `name` is the basename of the .html file, and is used as the clientside component class name
-- `props` is a JSON-stringified version of the object you pass to `res.render()`, and is used by `svelte-view-engine/payload`
-`include /path/to/file` is replaced with the contents of the file
+- `head` is the SSR-rendered markup from any `<svelte:head>` tags.
+- `css` is the CSS.
+- `html` is the SSR-rendered component markup.
+- `js` is the clientside component returned by the build script.
+- `name` is the basename of the .html file, and is used as the clientside component class name.
+- `props` is a JSON-stringified version of the object you pass to `res.render()`.
+`include /path/to/file` is replaced with the contents of the file.
 
 Build script
 ============
@@ -183,7 +184,7 @@ When to use `payload` instead of `export let`:
 
 - You want to access the props from a sub-component without having to pass them in explicitly from the top-level page component.
 
-- You need to manipulate the data somehow before using it, for example to stringify it and then re-parse it using a JSON reviver function that depends on your app code.  In this case you would write a module that reads the payload and exposes a modified version, then use that module in your pages.
+- You need to manipulate the data somehow before using it, for example to stringify it and then re-parse it using a JSON reviver function that depends on your app code.  In this case you would write a module that reads the payload and exposes the modified version, then use that module in your pages.
 
 Build scheduling
 ================
