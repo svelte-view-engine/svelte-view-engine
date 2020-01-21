@@ -206,7 +206,7 @@ buildConcurrency
 _rebuild
 ========
 
-If `props._rebuild` is true, the page is rebuilt before being rendered.  This can be hooked up to the hard reload feature in Chrome via the Cache-Control header (sometimes it's useful to be able to force a rebuild in development, for example if the app has been offline while making changes to components, in which case they wouldn't be picked up for rebuild and the app may have an out of date version):
+If `props._rebuild` is true, the page is rebuilt before being rendered.  This can be hooked up to the hard reload feature in Chrome via the Cache-Control header (sometimes it's useful to be able to force a rebuild in development, for example if the app has been offline while making changes to components, in which case they wouldn't be picked up for rebuild and the app would have an out of date version):
 
 ```
 app.use(function (req, res, next) {
