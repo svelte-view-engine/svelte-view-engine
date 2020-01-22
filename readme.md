@@ -67,7 +67,7 @@ This code is defined in a single root template that's used for all pages, with `
 	<body>
 		${html}
 		<script>
-			props = ${props};
+			props = JSON.parse(${props});
 			
 			${js}
 			
@@ -86,7 +86,7 @@ This code is defined in a single root template that's used for all pages, with `
 - `html` is the SSR-rendered component markup.
 - `js` is the clientside component returned by the build script.
 - `name` is the basename of the .html file, and is used as the clientside component class name.
-- `props` is a JSON-stringified version of the object you pass to `res.render()`.
+- `props` is a JSON string of the object you pass to `res.render()`.
 `include /path/to/file` is replaced with the contents of the file.
 
 Build script
@@ -123,16 +123,14 @@ It should compile the component and write JSON out to `buildPath` with the follo
 
 Props/payload
 =============
-
-The `svelte-view-engine/payload` module uses a global variable called `props` to make the view locals available to pages.
-
-svelte-view-engine makes it available to pages at SSR render time.  To use the data clientside, set the `props` variable in your root template before the `${js}` placeholder:
+  
+The `svelte-view-engine/payload` module makes view locals available to all components, clientside and serverside.  To achieve this, the props of the currently-rendering page are stored in a global variable called `props`.  On the server, this holds the original object passed to `res.render()`.  On the client, it's inserted into the root template as a string of JSON:
 
 ```html
 ...
 
 <script>
-	props = ${props};
+	props = JSON.parse(${props});
 	
 	${js}
 	
@@ -144,6 +142,10 @@ svelte-view-engine makes it available to pages at SSR render time.  To use the d
 ...
 ```
 
+The `JSON.parse` is done in the root template so that the props can be passed to the clientside component if using `export let`.  If you are not using `export let`, you can implement your own payload module, for example to parse the string with a JSON reviver function on the client.
+
+This is more flexible, and [possibly faster](https://www.youtube.com/watch?v=ff4fgQxPaO0), than having the JSON string evaluated directly as JavaScript in the root template.
+
 You can then use the data in your pages like so:
 
 ```html
@@ -154,13 +156,13 @@ You can then use the data in your pages like so:
 </script>
 ```
 
-You can also just use `export let` as normal (in which case you should also pass the global `props` variable as the `props` option in your root template):
+You can also just use `export let` as normal (in which case you need to also pass the `props` variable to the clientside component):
 
 ```html
 // Root template
 
 <script>
-	props = ${props};
+	props = JSON.parse(${props});
 	
 	${js}
 	

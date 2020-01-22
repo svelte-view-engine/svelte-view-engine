@@ -176,7 +176,16 @@ module.exports = class {
 			let {css} = this.serverComponent;
 			let {js} = this.clientComponent;
 			
-			let props = JSON.stringify(locals);
+			/*
+			props are inserted into the template as a template string,
+			ready for bootstrap code (in the template or elsewhere) to
+			JSON.parse it.
+			
+			Backslashes must be doubled up so as not to be consumed by the
+			template string (` quotes).
+			*/
+			
+			let props = "`" + JSON.stringify(locals).replace(/\\/g, "\\\\") + "`";
 			
 			if (this.options.liveReload) {
 				head += `
