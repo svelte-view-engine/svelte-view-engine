@@ -14,6 +14,7 @@ module.exports = function(opts={}) {
 		init: true,
 		buildConcurrency: os.cpus().length,
 		template: null,
+		payloadFormat: "json",
 		buildScript: null,
 		buildDir: null,
 		watch: dev,

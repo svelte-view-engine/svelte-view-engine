@@ -124,45 +124,46 @@ It should compile the component and write JSON out to `buildPath` with the follo
 Props/payload
 =============
   
-The `svelte-view-engine/payload` module makes view locals available to all components, clientside and serverside.  To achieve this, the props of the currently-rendering page are stored in a global variable called `props`.  On the server, this holds the original object passed to `res.render()`.  On the client, it's inserted into the root template as a string of JSON:
+The `svelte-view-engine/payload` module makes view locals available to all components, clientside and serverside.  To achieve this, the props of the currently-rendering page are stored in a global variable called `props`.  On the server, this holds the original object passed to `res.render()`.  On the client, it's inserted into the root template as a string of JSON.  It can be injected into the template in various ways, depending on your setup:
 
-```html
-...
+- set the `payloadFormat` option to `"templateString"` to get the props as a template string: `props = ${props};` -> `props = \`{"a":1}\`;`
 
-<script>
-	props = JSON.parse(${props});
-	
-	${js}
-	
-	new ${name}({
-		...
-	});
-</script>
+- use the JSON value by evaluating is as JavaScript: `props = ${props};` -> `props = {"a":1};`
 
-...
-```
+- put the JSON string into a script tag:
 
-The `JSON.parse` is done in the root template so that the props can be passed to the clientside component if using `export let`.  If you are not using `export let`, you can implement your own payload module, for example to parse the string with a JSON reviver function on the client.
+	```
+	<script type="application/json" id="payload">
+		${props}
+	</script>
+	<script>
+		props = document.getElementById("payload").text;
+		
+		// ...
+	</script>
+	```
 
-This is more flexible, and [possibly faster](https://www.youtube.com/watch?v=ff4fgQxPaO0), than having the JSON string evaluated directly as JavaScript in the root template.
+Keeping the payload as a string is most flexible, and allows you to parse it with your own code if you don't use `export let` (if you use `export let`, it must be a live object that you can pass to the clientside component `props` option).
 
-You can then use the data in your pages like so:
+You access the props in pages like so:
 
 ```html
 <script>
 	import payload from "svelte-view-engine/payload";
 	
-	let {user} = payload.get();
+	let {
+		a, // 1
+	} = payload.get();
 </script>
 ```
 
-You can also just use `export let` as normal (in which case you need to also pass the `props` variable to the clientside component):
+You can also just use `export let` as normal:
 
 ```html
-// Root template
+<!-- Root template -->
 
 <script>
-	props = JSON.parse(${props});
+	props = ${props};
 	
 	${js}
 	
@@ -172,10 +173,8 @@ You can also just use `export let` as normal (in which case you need to also pas
 		hydrate: true,
 	});
 </script>
-```
 
-```html
-// Page
+<!-- Page -->
 
 <script>
 	export let user;
@@ -186,7 +185,7 @@ When to use `payload` instead of `export let`:
 
 - You want to access the props from a sub-component without having to pass them in explicitly from the top-level page component.
 
-- You need to manipulate the data somehow before using it, for example to stringify it and then re-parse it using a JSON reviver function that depends on your app code.  In this case you would write a module that reads the payload and exposes the modified version, then use that module in your pages.
+- You need to manipulate the data somehow before using it, for example to parse it using a JSON reviver function that depends on your app code.  In this case you would write a module that reads the payload and exposes the modified version, then use that module in your pages.
 
 Build scheduling
 ================
@@ -226,6 +225,8 @@ Options
 `dev` = `process.env.NODE_ENV !== "production"`
 
 `template`: Path to root template.
+
+`payloadFormat`: Format of the `${props}` placeholder value.  Defaults to `"json"`, which inserts a string of JSON directly (must be inserted into a script tag as JSON can contain both single and double quotes).  Set to `"templateString"` to wrap the JSON as a backtick-quoted string.  String values in the JSON must not contain unescaped backticks.
 
 `dir`: Pages directory.
 
