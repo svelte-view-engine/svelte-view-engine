@@ -86,8 +86,8 @@ This code is defined in a single root template that's used for all pages, with `
 - `html` is the SSR-rendered component markup.
 - `js` is the clientside component returned by the build script.
 - `name` is the basename of the .html file, and is used as the clientside component class name.
-- `props` is a JSON string of the object you pass to `res.render()`.
-`include /path/to/file` is replaced with the contents of the file.
+- `props` is a JSON payload of the object you pass to `res.render()`.  See the `payloadFormat` option for formatting options.
+- `include /path/to/file` is replaced with the contents of the file.
 
 Build script
 ============
