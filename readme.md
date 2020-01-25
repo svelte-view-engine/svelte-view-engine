@@ -175,7 +175,7 @@ You can also just use `export let` as normal:
 <!-- Page -->
 
 <script>
-	export let user;
+	export let a; // 1
 </script>
 ```
 
