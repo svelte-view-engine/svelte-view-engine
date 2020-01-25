@@ -126,7 +126,7 @@ Props/payload
   
 The `svelte-view-engine/payload` module makes view locals available to all components, clientside and serverside.  To achieve this, the props of the currently-rendering page are stored in a global variable called `props`.  On the server, this holds the original object passed to `res.render()`.  On the client, it's inserted into the root template as a string of JSON.  It can be injected into the template in various ways, depending on your setup:
 
-- set the `payloadFormat` option to `"templateString"` to get the props as a template string: `props = ${props};` -> `props = \`{"a":1}\`;`
+- set the `payloadFormat` option to `"templateString"` to get the props as a template string: `props = ${props};` -> `props = [backtick]{"a":1}[backtick];`
 
 - use the JSON value by evaluating is as JavaScript: `props = ${props};` -> `props = {"a":1};`
 
