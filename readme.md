@@ -67,7 +67,7 @@ This code is defined in a single root template that's used for all pages, with `
 	<body>
 		${html}
 		<script>
-			props = JSON.parse(${props});
+			props = ${props};
 			
 			${js}
 			
@@ -163,13 +163,11 @@ You can also just use `export let` as normal:
 <!-- Root template -->
 
 <script>
-	props = ${props};
-	
 	${js}
 	
 	new ${name}({
 		target: document.body,
-		props,
+		props: ${props},
 		hydrate: true,
 	});
 </script>
@@ -185,7 +183,7 @@ When to use `payload` instead of `export let`:
 
 - You want to access the props from a sub-component without having to pass them in explicitly from the top-level page component.
 
-- You need to manipulate the data somehow before using it, for example to parse it using a JSON reviver function that depends on your app code.  In this case you would write a module that reads the payload and exposes the modified version, then use that module in your pages.
+- You need to process the data somehow before using it, for example to parse it using a JSON reviver function that depends on your app code.  In this case you would write a module that reads the payload and exposes the modified version, then use that module in your pages.
 
 Build scheduling
 ================
