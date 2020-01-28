@@ -1,6 +1,7 @@
 {
 	"name": "svelte-view-engine",
 	"version": "9.0.5",
+	"repository": "https://github.com/svelte-view-engine/svelte-view-engine",
 	"dependencies": {
 		"chokidar": "^3.0.2",
 		"flowfs": "^3.7.0",
