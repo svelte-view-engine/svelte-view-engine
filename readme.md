@@ -42,7 +42,7 @@ The motivation behind svelte-view-engine is to be able to build the view layer o
 
 It is therefore a view engine (like Pug or EJS) as opposed to an app framework (like [Sapper](https://sapper.svelte.dev) or [Next.js](https://nextjs.org)).
 
-svelte-view-engine doesn't know how to compile Svelte components itself; you pass it the path to a build script.  This allows you to use your existing Svelte build process, or write one for your specific use case.  See the [example app](https://github.com/user896724/sve) for an example of this.
+svelte-view-engine doesn't know how to compile Svelte components itself; you pass it the path to a build script.  This allows you to use your existing Svelte build process, or write one for your specific use case.  See the [example app](https://github.com/svelte-view-engine/example) for an example of this.
 
 Root template
 =============
