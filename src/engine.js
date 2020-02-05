@@ -30,6 +30,7 @@ module.exports = function(opts={}) {
 			"cache",
 		],
 		dev,
+		stores: null,
 	}, opts);
 	
 	let template = new Template(options.template, {

@@ -228,6 +228,16 @@ module.exports = class {
 			throw e;
 		} finally {
 			payload.set(null);
+			
+			if (this.options.stores) {
+				for (let store of this.options.stores) {
+					if (store.reset) {
+						store.reset();
+					} else {
+						store.set(undefined);
+					}
+				}
+			}
 		}
 	}
 }
