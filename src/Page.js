@@ -182,7 +182,7 @@ module.exports = class {
 			/*
 			note that we don't use .css from render() - this only includes CSS for
 			child components that happen to be rendered this time.  we use
-			serverComponent.css which has CSS for all components that are imported
+			serverComponent.css, which has CSS for all components that are imported
 			(ie all components that could possibly be rendered)
 			*/
 			
