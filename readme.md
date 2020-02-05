@@ -223,7 +223,7 @@ app.use(function (req, res, next) {
 Stores/SSR gotchas
 ==================
 
-Svelte stores, and any other global values, must be implemented carefully to avoid sharing values between all users of the app.  Since stores are only useful if they're global, and being global on the server means being shared between all users of the app, svelte-view-engine provides a way to register stores so that they can be cleared after each render.
+Svelte stores, and any other global values, must be implemented carefully to avoid sharing values between all users of the app.  Since stores are only useful if they're global, and being global on the server means being shared between all users of the app, svelte-view-engine provides a way to register stores so that they can be cleared before each render.
 
 Pass an array of writable stores to the `stores` option to have them cleared.  By default, the value will be set to `undefined`.  To set the value to something else, define a `reset` method on the store, which will be called instead of `set(undefined)` if present.
 
@@ -262,4 +262,4 @@ Options
 
 `saveJs`: Save component JS in .client.js and .server.js files in the build dir.  Defaults to `dev`.  This is sometimes useful for looking up line numbers from server error logs when the SSR component render function throws an error.
 
-`stores`: Optional array of writable stores to reset after each call to `render`.  If the store has a `reset` method, it will be called; otherwise the value will be set to `undefined`.
+`stores`: Optional array of writable stores to reset before each call to `render`.  If the store has a `reset` method, it will be called; otherwise the value will be set to `undefined`.

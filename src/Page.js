@@ -166,6 +166,20 @@ module.exports = class {
 			payload.set(locals);
 			
 			/*
+			Clear stores
+			*/
+			
+			if (this.options.stores) {
+				for (let store of this.options.stores) {
+					if (store.reset) {
+						store.reset();
+					} else {
+						store.set(undefined);
+					}
+				}
+			}
+			
+			/*
 			note that we don't use .css from render() - this only includes CSS for
 			child components that happen to be rendered this time.  we use
 			serverComponent.css which has CSS for all components that are imported
@@ -228,16 +242,6 @@ module.exports = class {
 			throw e;
 		} finally {
 			payload.set(null);
-			
-			if (this.options.stores) {
-				for (let store of this.options.stores) {
-					if (store.reset) {
-						store.reset();
-					} else {
-						store.set(undefined);
-					}
-				}
-			}
 		}
 	}
 }
