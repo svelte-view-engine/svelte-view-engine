@@ -1,6 +1,7 @@
 let os = require("os");
 let ws = require("ws");
 let fs = require("flowfs");
+let Bluebird = require("bluebird");
 let Page = require("./Page");
 let Template = require("./Template");
 let buildScheduler = require("./buildScheduler");
@@ -11,7 +12,8 @@ module.exports = function(opts={}) {
 	let options = Object.assign({
 		dir: null,
 		type: "html",
-		init: true,
+		init: false,
+		build: false,
 		buildConcurrency: os.cpus().length,
 		template: null,
 		payloadFormat: "json",
@@ -31,6 +33,7 @@ module.exports = function(opts={}) {
 		],
 		dev,
 		stores: null,
+		rebuildOnRenderError: false,
 	}, opts);
 	
 	let template = new Template(options.template, {
@@ -60,27 +63,23 @@ module.exports = function(opts={}) {
 		);
 	}
 	
-	let prebuildPromise;
+	let pagesCreated = false;
 	
-	async function prebuild() {
+	async function createPages() {
+		if (pagesCreated) {
+			return;
+		}
+		
 		let files = await fs(options.dir).glob("**/*." + options.type);
 		
 		for (let node of files) {
-			let page = createPage(node.path);
-			
-			pages[node.path] = page;
-			
-			scheduler.scheduleBuild(page);
+			pages[node.path] = createPage(node.path);
 		}
 		
-		await scheduler.awaitPendingBuilds();
+		pagesCreated = true;
 	}
 	
-	if (options.init) {
-		prebuildPromise = prebuild();
-	}
-	
-	return {
+	let engine = {
 		dir: options.dir,
 		type: options.type,
 		
@@ -92,7 +91,25 @@ module.exports = function(opts={}) {
 			return scheduler.hasPendingBuilds();
 		},
 		
-		prebuild: prebuildPromise,
+		async buildPages() {
+			await createPages();
+			
+			for (let page of Object.values(pages)) {
+				scheduler.scheduleBuild(page);
+			}
+			
+			await scheduler.awaitPendingBuilds();
+		},
+		
+		/*
+		initialise pages (build if necessary)
+		*/
+		
+		async initPages() {
+			await createPages();
+			
+			await Bluebird.map(Object.values(pages), page => page.init());
+		},
 		
 		async render(path, locals, callback) {
 			let sendLocals = {};
@@ -125,5 +142,13 @@ module.exports = function(opts={}) {
 				}
 			}
 		},
+	};
+	
+	if (options.build) {
+		engine.buildPages();
+	} else if (options.init) {
+		engine.initPages();
 	}
+	
+	return engine;
 }

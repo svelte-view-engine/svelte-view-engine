@@ -65,12 +65,12 @@ module.exports = class {
 		}
 	}
 	
-	async runBuildScript(noCache=false) {
+	async runBuildScript(useCache=false) {
 		let json = {
 			name: this.name,
 			path: this.path,
 			buildPath: this.buildFile.path,
-			noCache,
+			useCache,
 			options: this.options,
 		};
 		
@@ -81,55 +81,60 @@ module.exports = class {
 		`);
 	}
 	
-	async build(rebuild, noCache) {
+	async build(useCache=false) {
 		try {
-			if (rebuild || !await this.buildFile.exists()) {
-				await this.runBuildScript(noCache);
-			}
-			
-			let {
-				client,
-				server,
-			} = await this.buildFile.readJson();
-			
-			this.serverComponent = server;
-			this.clientComponent = client;
-			
-			this.ssrModule = await instantiateSsrModule(this.serverComponent.component, this.path);
-			
-			if (this.options.watch) {
-				if (this.watcher) {
-					this.watcher.close();
-				}
-				
-				this.watcher = chokidar.watch(this.clientComponent.watchFiles);
-				
-				this.watcher.on("change", async (path) => {
-					let noCache = noCacheDependencyTypes.includes(fs(path).type);
-					
-					this.ready = false;
-					
-					if (!this.active) {
-						// give active pages a chance to get scheduled first
-						await sleep(100);
-					}
-					
-					this.scheduler.scheduleBuild(this, this.active, true, noCache);
-				});
-			}
-			
-			if (this.liveReloadSocket) {
-				for (let client of this.liveReloadSocket.clients) {
-					client.send(this.path);
-				}
-			}
-			
-			this.ready = true;
+			await this.runBuildScript(useCache);
+			await this.init();
 		} catch (e) {
 			this.buildFile.delete();
 			
 			throw e;
 		}
+	}
+	
+	async init(priority=false) {
+		if (!await this.buildFile.exists()) {
+			return this.scheduler.build(this, priority);
+		}
+		
+		let {
+			client,
+			server,
+		} = await this.buildFile.readJson();
+		
+		this.serverComponent = server;
+		this.clientComponent = client;
+		
+		this.ssrModule = await instantiateSsrModule(this.serverComponent.component, this.path);
+		
+		if (this.options.watch) {
+			if (this.watcher) {
+				this.watcher.close();
+			}
+			
+			this.watcher = chokidar.watch(this.clientComponent.watchFiles);
+			
+			this.watcher.on("change", async (path) => {
+				let useCache = !noCacheDependencyTypes.includes(fs(path).type);
+				
+				this.ready = false;
+				
+				if (!this.active) {
+					// give active pages a chance to get scheduled first
+					await sleep(100);
+				}
+				
+				this.scheduler.scheduleBuild(this, this.active, useCache);
+			});
+		}
+		
+		if (this.liveReloadSocket) {
+			for (let client of this.liveReloadSocket.clients) {
+				client.send(this.path);
+			}
+		}
+		
+		this.ready = true;
 	}
 	
 	heartbeat() {
@@ -148,11 +153,11 @@ module.exports = class {
 	async render(locals) {
 		try {
 			if (locals._rebuild) {
-				await this.scheduler.build(this, true, true);
+				await this.build();
 			}
 			
 			if (!this.ready) {
-				await this.scheduler.build(this);
+				await this.init(true);
 			}
 			
 			/*
@@ -236,8 +241,19 @@ module.exports = class {
 				props,
 			});
 		} catch (e) {
-			this.ready = false;
-			this.buildFile.delete();
+			if (this.options.rebuildOnRenderError) {
+				/*
+				NOTE not sure if this is useful -- page will be rebuilt
+				in dev when the page changes anyway, and we don't want
+				this in prod as something like a route not passing the
+				right props to a page would trigger it and mean waiting
+				for the page to rebuild on next hit, but it won't have
+				changed.
+				*/
+				
+				this.ready = false;
+				this.buildFile.delete();
+			}
 			
 			throw e;
 		} finally {
