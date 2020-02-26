@@ -41,7 +41,7 @@ module.exports = function(opts={}) {
 	let liveReloadSocket;
 	let pages = {};
 	
-	if (options.liveReload) {
+	if (options.watch && options.liveReload) {
 		liveReloadSocket = new ws.Server({
 			port: options.liveReloadPort,
 		});
@@ -60,6 +60,8 @@ module.exports = function(opts={}) {
 		);
 	}
 	
+	let prebuildPromise;
+	
 	async function prebuild() {
 		let files = await fs(options.dir).glob("**/*." + options.type);
 		
@@ -70,10 +72,12 @@ module.exports = function(opts={}) {
 			
 			scheduler.scheduleBuild(page);
 		}
+		
+		await scheduler.awaitPendingBuilds();
 	}
 	
 	if (options.init) {
-		prebuild();
+		prebuildPromise = prebuild();
 	}
 	
 	return {
@@ -87,6 +91,8 @@ module.exports = function(opts={}) {
 		hasPendingBuilds() {
 			return scheduler.hasPendingBuilds();
 		},
+		
+		prebuild: prebuildPromise,
 		
 		async render(path, locals, callback) {
 			let sendLocals = {};

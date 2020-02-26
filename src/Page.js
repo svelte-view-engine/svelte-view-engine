@@ -118,7 +118,7 @@ module.exports = class {
 				});
 			}
 			
-			if (this.options.liveReload) {
+			if (this.liveReloadSocket) {
 				for (let client of this.liveReloadSocket.clients) {
 					client.send(this.path);
 				}
@@ -197,7 +197,7 @@ module.exports = class {
 				props = "`" + json.replace(/\\/g, "\\\\") + "`";
 			}
 			
-			if (this.options.liveReload) {
+			if (this.liveReloadSocket) {
 				head += `
 					<script>
 						var socket;
