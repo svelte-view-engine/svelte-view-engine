@@ -5,7 +5,14 @@
 	"dependencies": {
 		"bluebird": "^3.7.2",
 		"chokidar": "^3.0.2",
-		"flowfs": "^3.7.0",
 		"ws": "^7.0.1"
+	},
+	"devDependencies": {
+		"flowfs": "^3.11.0",
+		"mocha": "^7.1.0",
+		"yargs": "^15.1.0"
+	},
+	"scripts": {
+		"test": "./node_modules/mocha/bin/mocha test/**/*.test.js"
 	}
 }

@@ -30,13 +30,13 @@ module.exports = function(options) {
 		for (let manifest of toBuild) {
 			let {
 				page,
-				useCache,
+				options,
 			} = manifest;
 			
 			log(
 				"    - "
 				+ page.relativePath
-				+ (useCache ? " (use cache)" : "")
+				+ (options ? " " + JSON.stringify(options) : "")
 			);
 			
 			remove(buildQueue, manifest);
@@ -44,7 +44,7 @@ module.exports = function(options) {
 			let inProgressBuild = {
 				page,
 				
-				promise: page.build(useCache).finally(function() {
+				promise: page.build(options).finally(function() {
 					log(
 						"Page "
 						+ page.relativePath
@@ -60,17 +60,17 @@ module.exports = function(options) {
 		}
 	}
 	
-	function scheduleBuild(page, priority, useCache=false) {
+	function scheduleBuild(page, priority, options) {
 		let manifest = {
 			page,
-			useCache,
+			options,
 		};
 		
 		log(
 			"Scheduling "
 			+ page.relativePath
 			+ (priority ? " (priority)" : "")
-			+ (useCache ? " (use cache)" : "")
+			+ (options ? " " + JSON.stringify(options) : "")
 		);
 		
 		if (priority) {
@@ -86,11 +86,10 @@ module.exports = function(options) {
 		return inProgressBuilds.find(b => b.page === page);
 	}
 	
-	async function build(page, useCache=false) {
+	async function build(page, options) {
 		log(
 			"Build next: "
 			+ page.relativePath
-			+ (useCache ? " (use cache)" : "")
 		);
 		
 		// drop any previously scheduled builds for this page
@@ -112,7 +111,7 @@ module.exports = function(options) {
 		if (!inProgressBuild) {
 			log(page.relativePath + ": scheduling build");
 			
-			scheduleBuild(page, useCache);
+			scheduleBuild(page, options);
 			
 			try {
 				while (!(inProgressBuild = findInProgressBuild(page))) {

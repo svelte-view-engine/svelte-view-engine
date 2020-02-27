@@ -1,0 +1,8 @@
+{
+	"head": "${head}",
+	"css": "${css}",
+	"html": "${html}",
+	"props": "${props}",
+	"js": "${js}",
+	"name": "${name}"
+}

@@ -65,7 +65,7 @@ module.exports = class {
 		}
 	}
 	
-	async runBuildScript(useCache=false) {
+	async runBuildScript(useCache) {
 		let json = {
 			name: this.name,
 			path: this.path,
@@ -81,7 +81,13 @@ module.exports = class {
 		`);
 	}
 	
-	async build(useCache=false) {
+	async build(options) {
+		let {
+			useCache,
+		} = Object.assign({
+			useCache: false,
+		}, options);
+		
 		try {
 			await this.runBuildScript(useCache);
 			await this.init();
@@ -124,7 +130,9 @@ module.exports = class {
 					await sleep(100);
 				}
 				
-				this.scheduler.scheduleBuild(this, this.active, useCache);
+				this.scheduler.scheduleBuild(this, this.active, {
+					useCache,
+				});
 			});
 		}
 		
