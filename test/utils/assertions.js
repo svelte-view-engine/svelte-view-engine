@@ -33,13 +33,6 @@ let assertions = {
 			assertions.deep(obj[prop], props[prop]);
 		}
 	},
-	
-	// not implemented yet - should be recursive
-	//deepSubset(obj, props) {
-	//	for (let prop in props) {
-	//		assertions.subset(obj[prop], props[prop]);
-	//	}
-	//},
 };
 
 module.exports = assertions;
