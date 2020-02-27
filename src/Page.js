@@ -39,18 +39,28 @@ no longer active
 let idleTimeout = 1000 * 15;
 
 module.exports = class {
-	constructor(scheduler, template, path, options, liveReloadSocket) {
-		this.scheduler = scheduler;
-		this.template = template;
+	constructor(engine, path) {
+		let {
+			options,
+			scheduler,
+			template,
+			liveReloadSocket,
+		} = engine;
+		
+		this.engine = engine;
 		this.path = path;
 		this.relativePath = fs(path).pathFrom(options.dir);
-		this.options = options;
-		this.liveReloadSocket = liveReloadSocket;
 		this.name = validIdentifier(fs(path).basename);
-		this.active = false;
+		
+		this.options = options;
+		this.scheduler = scheduler;
+		this.template = template;
+		this.liveReloadSocket = liveReloadSocket;
 		
 		this.ready = false;
 		this.buildFile = fs(path).reparent(options.dir, options.buildDir).withExt(".json");
+		
+		this.active = false;
 		
 		if (this.liveReloadSocket) {
 			this.liveReloadSocket.on("connection", (ws) => {
@@ -165,6 +175,7 @@ module.exports = class {
 			}
 			
 			if (!this.ready) {
+				await this.engine._init;
 				await this.init(true);
 			}
 			

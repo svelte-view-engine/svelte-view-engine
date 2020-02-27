@@ -9,7 +9,7 @@ module.exports = async function(code, path) {
 	
 	let module = require(tmpFile.path);
 	
-	tmpFile.delete();
+	await tmpFile.delete();
 	
 	return module;
 }
