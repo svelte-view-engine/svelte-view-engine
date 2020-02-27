@@ -175,7 +175,10 @@ module.exports = class {
 			}
 			
 			if (!this.ready) {
-				await this.engine._init;
+				if (!this.options.renderBeforeInit) {
+					await this.engine._init;
+				}
+				
 				await this.init(true);
 			}
 			
