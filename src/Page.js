@@ -88,14 +88,8 @@ module.exports = class {
 			useCache: false,
 		}, options);
 		
-		try {
-			await this.runBuildScript(useCache);
-			await this.init();
-		} catch (e) {
-			this.buildFile.delete();
-			
-			throw e;
-		}
+		await this.runBuildScript(useCache);
+		await this.init();
 	}
 	
 	async init(priority=false) {
@@ -103,15 +97,21 @@ module.exports = class {
 			return this.scheduler.build(this, priority);
 		}
 		
-		let {
-			client,
-			server,
-		} = await this.buildFile.readJson();
-		
-		this.serverComponent = server;
-		this.clientComponent = client;
-		
-		this.ssrModule = await instantiateSsrModule(this.serverComponent.component, this.path);
+		try {
+			let {
+				client,
+				server,
+			} = await this.buildFile.readJson();
+			
+			this.serverComponent = server;
+			this.clientComponent = client;
+			
+			this.ssrModule = await instantiateSsrModule(this.serverComponent.component, this.path);
+		} catch (e) {
+			this.buildFile.delete();
+			
+			throw e;
+		}
 		
 		if (this.options.watch) {
 			if (this.watcher) {
