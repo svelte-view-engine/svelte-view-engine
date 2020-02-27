@@ -79,6 +79,21 @@ module.exports = function(opts={}) {
 		pagesCreated = true;
 	}
 	
+	/*
+	build/init
+	
+	build: rebuild all pages.  note -- this deletes the build dir before
+	building pages, but if someone somehow manages to request a page while
+	there is still an old build file for it (ie. in between app startup
+	and the file being deleted), the existing build file will be used.
+	
+	init: init all pages, assuming an up-to-date build file exists.
+	pages are built if there is no build file, but not rebuilt if it is
+	out of date.  use this on dev, where it doesn't matter if you see an
+	out of date page now and then (watching should keep everything up to
+	date); and on prod -- on prod, use prebuilt pages.
+	*/
+	
 	let engine = {
 		dir: options.dir,
 		type: options.type,
@@ -93,6 +108,8 @@ module.exports = function(opts={}) {
 		
 		async buildPages() {
 			await createPages();
+			
+			await fs(options.buildDir).rmrf();
 			
 			for (let page of Object.values(pages)) {
 				scheduler.scheduleBuild(page);
