@@ -1,6 +1,6 @@
 {
 	"name": "svelte-view-engine",
-	"version": "10.0.0",
+	"version": "10.1.0",
 	"repository": "https://github.com/svelte-view-engine/svelte-view-engine",
 	"dependencies": {
 		"bluebird": "^3.7.2",
@@ -13,6 +13,6 @@
 		"yargs": "^15.1.0"
 	},
 	"scripts": {
-		"test": "./node_modules/mocha/bin/mocha test/**/*.test.js"
+		"test": "./node_modules/mocha/bin/mocha test/tests/**/*.test.js"
 	}
 }

@@ -1,6 +1,6 @@
-let {deep} = require("./testUtils/assertions");
-let svelteViewEngine = require("../index");
-let config = require("./config");
+let {deep} = require("../utils/assertions");
+let config = require("../config");
+let svelteViewEngine = require("../../index");
 
 async function render(engine, page) {
 	return await engine.render(engine.dir + "/" + page + "." + engine.type);
