@@ -265,12 +265,10 @@ module.exports = class {
 		} catch (e) {
 			if (this.options.rebuildOnRenderError) {
 				/*
-				NOTE not sure if this is useful -- page will be rebuilt
-				in dev when the page changes anyway, and we don't want
-				this in prod as something like a route not passing the
-				right props to a page would trigger it and mean waiting
-				for the page to rebuild on next hit, but it won't have
-				changed.
+				for dev - just means we can refresh the page as soon as
+				we fix it after a 500 and it'll wait for the rebuild, so
+				we don't have to keep refreshing and getting the 500
+				until it's finished
 				*/
 				
 				this.ready = false;
