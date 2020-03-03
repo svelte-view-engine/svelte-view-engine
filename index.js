@@ -54,5 +54,9 @@ module.exports = function(opts={}) {
 		renderBeforeInit: false,
 	}, opts);
 	
+	if (!options.watch) {
+		options.liveReload = false;
+	}
+	
 	return new Engine(options);
 }

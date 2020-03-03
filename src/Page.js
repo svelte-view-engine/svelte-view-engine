@@ -1,9 +1,11 @@
 let chokidar = require("chokidar");
 let fs = require("flowfs");
+let url = require("url");
 let cmd = require("./utils/cmd");
 let sleep = require("./utils/sleep");
 let validIdentifier = require("./utils/validIdentifier");
 let instantiateSsrModule = require("./utils/instantiateSsrModule");
+let isElectron = require("./utils/isElectron");
 let payload = require("./payload");
 
 /*
@@ -146,9 +148,23 @@ module.exports = class {
 			});
 		}
 		
-		if (this.liveReloadSocket) {
-			for (let client of this.liveReloadSocket.clients) {
-				client.send(this.path);
+		if (this.options.liveReload) {
+			if (isElectron) {
+				let {BrowserWindow} = require("electron");
+				
+				for (let win of BrowserWindow.getAllWindows()) {
+					let winUrl = win.getURL();
+					
+					if (winUrl) {
+						if (url.parse(winUrl).pathname === this.path) {
+							win.webContents.reloadIgnoringCache();
+						}
+					}
+				}
+			} else {
+				for (let client of this.liveReloadSocket.clients) {
+					client.send(this.path);
+				}
 			}
 		}
 		

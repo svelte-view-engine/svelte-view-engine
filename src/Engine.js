@@ -1,6 +1,7 @@
 let ws = require("ws");
 let fs = require("flowfs");
 let Bluebird = require("bluebird");
+let isElectron = require("./utils/isElectron");
 let Page = require("./Page");
 let Template = require("./Template");
 let buildScheduler = require("./buildScheduler");
@@ -19,7 +20,7 @@ module.exports = class {
 		this.liveReloadSocket = null;
 		this.pages = {};
 	
-		if (options.watch && options.liveReload) {
+		if (options.liveReload && !isElectron) {
 			this.liveReloadSocket = new ws.Server({
 				port: options.liveReloadPort,
 			});
