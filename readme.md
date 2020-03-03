@@ -5,6 +5,8 @@ svelte-view-engine is an Express-compatible [view engine](https://expressjs.com/
 
 Example app: [https://github.com/svelte-view-engine/example](https://github.com/svelte-view-engine/example).
 
+It can also be used in electron: [https://github.com/svelte-view-engine/example-electron](https://github.com/svelte-view-engine/example-electron).
+
 ```javascript
 const svelteViewEngine = require("svelte-view-engine");
 
