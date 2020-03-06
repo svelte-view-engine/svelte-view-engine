@@ -8,6 +8,12 @@ schedule builds and limit concurrency for:
 - memory efficiency
 */
 
+/*
+NOTE build promise rejections are caught, meaning that subsequent
+awaits on them will NOT throw.  check inProgressBuild.error if it
+matters whether the promise resolved, or just settled.
+*/
+
 module.exports = function(options) {
 	let inProgressBuilds = [];
 	let buildQueue = [];
@@ -44,7 +50,21 @@ module.exports = function(options) {
 			let inProgressBuild = {
 				page,
 				
-				promise: page.build(options).finally(function() {
+				promise: page.build(options).catch(function(e) {
+					log(
+						"Page "
+						+ page.relativePath
+						+ " failed, checking queue"
+					);
+					
+					console.error(e);
+					
+					inProgressBuild.error = e;
+					
+					remove(inProgressBuilds, inProgressBuild);
+					
+					checkQueue();
+				}).finally(function() {
 					log(
 						"Page "
 						+ page.relativePath
@@ -52,6 +72,7 @@ module.exports = function(options) {
 					);
 					
 					remove(inProgressBuilds, inProgressBuild);
+					
 					checkQueue();
 				}),
 			};
@@ -86,7 +107,7 @@ module.exports = function(options) {
 		return inProgressBuilds.find(b => b.page === page);
 	}
 	
-	async function build(page, options) {
+	async function build(page, priority, options) {
 		log(
 			"Build next: "
 			+ page.relativePath
@@ -101,31 +122,31 @@ module.exports = function(options) {
 		if (inProgressBuild) {
 			log(page.relativePath + ": awaiting in-progress build");
 			
-			try {
-				await inProgressBuild.promise;
-			} catch (e) {
-				console.error(e);
+			await inProgressBuild.promise;
+			
+			if (inProgressBuild.error) {
+				throw inProgressBuild.error;
 			}
 		}
 		
 		if (!inProgressBuild) {
 			log(page.relativePath + ": scheduling build");
 			
-			scheduleBuild(page, options);
+			scheduleBuild(page, priority, options);
 			
-			try {
-				while (!(inProgressBuild = findInProgressBuild(page))) {
-					log(page.relativePath + ": waiting for build slot");
-					
-					await Promise.race(inProgressBuilds.map(b => b.promise));
-				}
-			} catch (e) {
-				console.error(e);
+			while (!(inProgressBuild = findInProgressBuild(page))) {
+				log(page.relativePath + ": waiting for build slot");
+				
+				await Promise.race(inProgressBuilds.map(b => b.promise));
 			}
 			
 			log(page.relativePath + ": awaiting build");
 			
 			await inProgressBuild.promise;
+			
+			if (inProgressBuild.error) {
+				throw inProgressBuild.error;
+			}
 			
 			log(page.relativePath + ": build complete");
 		}
@@ -140,12 +161,8 @@ module.exports = function(options) {
 		},
 		
 		async awaitPendingBuilds() {
-			try {
-				while (inProgressBuilds.length > 0) {
-					await inProgressBuilds[0].promise;
-				}
-			} catch (e) {
-				console.error(e);
+			while (inProgressBuilds.length > 0) {
+				await inProgressBuilds[0].promise;
 			}
 		},
 	};

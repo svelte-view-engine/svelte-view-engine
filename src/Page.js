@@ -86,6 +86,10 @@ module.exports = class {
 			options: this.options,
 		};
 		
+		if (await this.buildFile.exists()) {
+			await this.buildFile.delete();
+		}
+		
 		await cmd(`
 			js
 			${this.options.buildScript}
@@ -137,7 +141,7 @@ module.exports = class {
 				
 				this.ready = false;
 				
-				if (!this.active) {
+				if (!isElectron && !this.active) {
 					// give active pages a chance to get scheduled first
 					await sleep(100);
 				}

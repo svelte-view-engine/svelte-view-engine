@@ -1,6 +1,6 @@
 {
 	"name": "svelte-view-engine",
-	"version": "10.4.1",
+	"version": "11.0.0",
 	"repository": "https://github.com/svelte-view-engine/svelte-view-engine",
 	"dependencies": {
 		"bluebird": "^3.7.2",
