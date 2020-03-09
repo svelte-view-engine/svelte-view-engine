@@ -78,13 +78,19 @@ module.exports = class {
 		return this.scheduler.hasPendingBuilds();
 	}
 	
-	async buildPages() {
+	async buildPages(pages=null) {
 		await this.createPages();
 		
-		await fs(this.options.buildDir).rmrf();
-		
-		for (let page of Object.values(this.pages)) {
-			this.scheduler.scheduleBuild(page);
+		if (pages) {
+			for (let path of pages) {
+				this.scheduler.scheduleBuild(this.pages[path]);
+			}
+		} else {
+			await fs(this.options.buildDir).rmrf();
+			
+			for (let page of Object.values(this.pages)) {
+				this.scheduler.scheduleBuild(page);
+			}
 		}
 		
 		await this.scheduler.awaitPendingBuilds();
