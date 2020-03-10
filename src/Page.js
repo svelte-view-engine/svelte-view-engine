@@ -124,7 +124,7 @@ module.exports = class {
 			
 			this.ssrModule = await instantiateSsrModule(this.serverComponent.component, this.path);
 		} catch (e) {
-			this.buildFile.delete();
+			this.buildFile.deleteIfExists();
 			
 			throw e;
 		}
@@ -292,7 +292,7 @@ module.exports = class {
 				*/
 				
 				this.ready = false;
-				this.buildFile.delete();
+				this.buildFile.deleteIfExists();
 			}
 			
 			throw e;
