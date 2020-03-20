@@ -247,7 +247,7 @@ Options
 
 `template`: Path to root template.
 
-`payloadFormat`: Format of the `${props}` placeholder value.  Defaults to `"json"`, which inserts a string of JSON directly (must be inserted into a script tag as JSON can contain both single and double quotes).  Set to `"templateString"` to wrap the JSON as a backtick-quoted string.  String values in the JSON must not contain unescaped backticks.
+`payloadFormat`: Format of the `${props}` placeholder value.  Defaults to `"json"`, which inserts a string of JSON directly (must be inserted into a script tag as JSON can contain both single and double quotes).  Set to `"templateString"` to wrap the JSON as a backtick-quoted string.  String values in the JSON must not contain unescaped backticks if using this option.
 
 `dir`: Pages directory.
 
