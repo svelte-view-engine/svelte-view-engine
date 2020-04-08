@@ -122,7 +122,9 @@ module.exports = class {
 			this.serverComponent = server;
 			this.clientComponent = client;
 			
-			this.ssrModule = await instantiateSsrModule(this.serverComponent.component, this.path);
+			if (this.serverComponent) {
+				this.ssrModule = await instantiateSsrModule(this.serverComponent.component, this.path);
+			}
 		} catch (e) {
 			this.buildFile.deleteIfExists();
 			
@@ -233,8 +235,15 @@ module.exports = class {
 			(ie all components that could possibly be rendered)
 			*/
 			
-			let {head, html} = this.ssrModule.render(locals);
-			let {css} = this.serverComponent;
+			let head = "";
+			let html = "";
+			let css = "";
+			
+			if (this.serverComponent) {
+				({head, html} = this.ssrModule.render(locals));
+				({css} = this.serverComponent);
+			}
+			
 			let {js} = this.clientComponent;
 			
 			let json = JSON.stringify(locals);

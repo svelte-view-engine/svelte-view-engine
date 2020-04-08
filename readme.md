@@ -118,11 +118,13 @@ It should compile the component and write JSON out to `buildPath` with the follo
 		js, // clientside js
 		watchFiles, // list of paths to watch for changes
 	},
+	
+	// server is optional; leave out to disable SSR
 	server: {
 		cache, // options.cache && bundle.cache
 		component, // serverside js
 		css, // css
-	}
+	},
 }
 ```
 
