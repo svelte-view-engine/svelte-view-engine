@@ -9,7 +9,7 @@
 		"ws": "^7.0.1"
 	},
 	"devDependencies": {
-		"flowfs": "^3.12.0",
+		"flowfs": "^4.0.0",
 		"mocha": "^7.1.0",
 		"yargs": "^15.1.0"
 	},
