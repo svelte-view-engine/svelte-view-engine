@@ -109,6 +109,10 @@ module.exports = class {
 	}
 	
 	async render(path, locals, callback) {
+		if (path[0] !== "/") {
+			path = this.dir + "/" + path;
+		}
+		
 		let sendLocals = {};
 		
 		if (!this.pages[path]) {
