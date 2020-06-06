@@ -212,6 +212,20 @@ module.exports = class {
 			same module (./payload) work for both server- and client-side code.
 			*/
 			
+			let _head = false; // HACK https://github.com/sveltejs/svelte/issues/4982
+			
+			locals = Object.assign({
+				__headOnce() {
+					if (_head) {
+						return false;
+					}
+					
+					_head = true;
+					
+					return true;
+				},
+			}, locals);
+			
 			payload.set(locals);
 			
 			/*
@@ -241,6 +255,7 @@ module.exports = class {
 			
 			if (this.serverComponent) {
 				({head, html} = this.ssrModule.render(locals));
+				
 				({css} = this.serverComponent);
 			}
 			
