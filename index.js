@@ -26,7 +26,7 @@ module.exports = function(opts={}) {
 		saveJs: true,
 		saveCss: true,
 		
-		jsPrefix: "",
+		assetsPrefix: "",
 		
 		transpile: !dev,
 		minify: !dev,

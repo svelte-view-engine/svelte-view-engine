@@ -47,7 +47,7 @@ The motivation behind svelte-view-engine is to be able to build the view layer o
 
 It is therefore a view engine (like Pug or EJS) as opposed to an app framework (like [Sapper](https://sapper.svelte.dev) or [Next.js](https://nextjs.org)).
 
-svelte-view-engine doesn't know how to compile Svelte components itself; you pass it the path to a build script.  This allows you to use your existing Svelte build process, or write one for your specific use case.  See the [example app](https://github.com/svelte-view-engine/example) for an example of this.
+svelte-view-engine doesn't know how to compile Svelte components itself; you pass it the path to a build script.  This allows you to use your existing Svelte build process, or write one for your specific use case.  See the [example app](https://github.com/svelte-view-engine/sve-app) for an example of this.
 
 Root template
 =============
@@ -86,13 +86,34 @@ This code is defined in a single root template that's used for all pages, with `
 </html>
 ```
 
-- `head` is the SSR-rendered markup from any `<svelte:head>` tags.
-- `css` is the CSS.
-- `html` is the SSR-rendered component markup.
-- `js` is the clientside component returned by the build script.
-- `name` is the basename of the .html file, and is used as the clientside component class name.
-- `props` is a JSON payload of the object you pass to `res.render()`.  See the `payloadFormat` option for formatting options.
-- `include /path/to/file` is replaced with the contents of the file.
+CSS and client-side JS are saved to files alongside the built pages.  You can either use these (external, `${jsPath}` and `${cssPath}`), or use the JS and CSS directly (inline, `${js}` and `${css}`.  If you are using external, you need to serve these files statically and set the `assetsPrefix` option to indicate the path they're available under:
+
+```js
+// buildDir option set to "./build/pages"
+// assetsPrefix option set to "/assets/"
+
+// in ./src/app.js:
+
+express.static("/assets", __dirname + "/../build/pages");
+
+// in ./src/template.html:
+
+// <link rel="stylesheet" href="${cssPath}">
+// ...
+// <script src="${jsPath}"></script>
+
+// ${jsPath} & ${cssPath} include the assetsPrefix
+```
+
+- `head` - the SSR-rendered markup from any `<svelte:head>` tags.
+- `html` - the SSR-rendered component markup.
+- `css` - the CSS.
+- `js` - the clientside component returned by the build script.
+- `cssPath` - the path to the external CSS file.
+- `jsPath` - the path to the external JS file.
+- `name` - the basename of the .html file, used as the clientside component class name.
+- `props` - a JSON payload of the object you pass to `res.render()`.  See the `payloadFormat` option for formatting options.
+- `include /path/to/file` - replaced with the contents of the file.
 
 Build script
 ============
@@ -104,8 +125,8 @@ This is a separate script, as opposed to a passed-in function, so that the build
 	name, // Component
 	path, // /src/path/to/Component.html
 	buildPath, // /build/path/to/Component.html.json
-	noCache, // Don't use cached bundles
 	options, // The options passed to svelteViewEngine
+	useCache, // Use cached bundles
 }
 ```
 
@@ -261,7 +282,7 @@ Options
 
 `buildScript`: Path to build script.
 
-`buildDir`: Where to keep built pages.  This must be unique per project, e.g. `"/tmp/myAppSvelteBuild"` or somewhere within the project directory.
+`buildDir`: Where to keep built pages.  This must be unique per project, e.g. `"/tmp/myAppSvelteBuild"` or somewhere within the project directory.  Recommended practice is to keep it with the project, to allow serving pages' CSS and JS files from it.
 
 `buildConcurrency`: The maximum number of pages to build concurrently.  Defaults to the number of processor cores available.
 
@@ -277,6 +298,8 @@ Options
 
 `excludeLocals`: Array of object keys to exclude from the locals that get passed to the component.  Some keys are added by Express, and may be unnecessary and/or security concerns if exposed.  This defaults to `["_locals", "settings", "cache"]` and is overwritten (not merged) with the supplied setting.
 
-`saveJs`: Save component JS in .client.js and .server.js files in the build dir.  Defaults to `dev`.  This is sometimes useful for looking up line numbers from server error logs when the SSR component render function throws an error.
+`saveJs`/`saveCss`: Save client-side JS and CSS files respectively in the `buildDir`.  Required for external CSS & JS.  Both default to `true` - turn off for minor build speed-up if not needed.
+
+`assetsPrefix`: Path to prepend to external JS/CSS URLs that are available in the root template as `${jsPath}` and `${cssPath}`.  Should include trailing slash.  Defaults to `""`.
 
 `stores`: Optional array of writable stores to reset before each call to `render`.  If the store has a `reset` method, it will be called; otherwise the value will be set to `undefined`.
