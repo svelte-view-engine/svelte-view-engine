@@ -190,7 +190,7 @@ module.exports = class {
 		}, idleTimeout);
 	}
 	
-	async render(locals) {
+	async render(locals, forEmail=false) {
 		try {
 			if (locals._rebuild) {
 				await this.build();
@@ -298,14 +298,18 @@ module.exports = class {
 				`;
 			}
 			
-			return await this.template.render({
-				head,
-				html,
-				css: css.code,
-				js: js.code,
-				name: this.name,
-				props,
-			});
+			if (forEmail) {
+				return html;
+			} else {
+				return await this.template.render({
+					head,
+					html,
+					css: css.code,
+					js: js.code,
+					name: this.name,
+					props,
+				});
+			}
 		} catch (e) {
 			if (this.options.rebuildOnRenderError) {
 				/*

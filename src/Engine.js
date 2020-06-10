@@ -108,7 +108,7 @@ module.exports = class {
 		await Bluebird.map(Object.values(this.pages), page => page.init());
 	}
 	
-	async render(path, locals, callback) {
+	async render(path, locals, callback, forEmail=false) {
 		if (path[0] !== "/") {
 			path = this.dir + "/" + path + "." + this.type;
 		}
@@ -128,7 +128,7 @@ module.exports = class {
 		}
 		
 		try {
-			let result = await page.render(sendLocals);
+			let result = await page.render(sendLocals, forEmail);
 			
 			if (callback) {
 				callback(null, result);
