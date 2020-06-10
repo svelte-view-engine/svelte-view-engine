@@ -78,23 +78,52 @@ module.exports = class {
 	}
 	
 	async runBuildScript(useCache) {
+		let {
+			name,
+			path,
+			options,
+			buildFile,
+		} = this;
+		
+		let {
+			saveJs,
+			saveCss,
+			dir,
+			buildDir,
+		} = options;
+		
 		let json = {
-			name: this.name,
-			path: this.path,
-			buildPath: this.buildFile.path,
+			name,
+			path,
+			buildPath: buildFile.path,
 			useCache,
-			options: this.options,
+			options,
 		};
 		
-		if (await this.buildFile.exists()) {
-			await this.buildFile.delete();
+		if (await buildFile.exists()) {
+			await buildFile.delete();
 		}
 		
 		await cmd(`
 			js
-			${this.options.buildScript}
+			${options.buildScript}
 			'${JSON.stringify(json)}'
 		`);
+		
+		let {
+			client,
+			server,
+		} = await buildFile.readJson();
+		
+		let base = fs(path).reparent(dir, buildDir);
+		
+		if (this.options.saveJs) {
+			await base.reExt(".js").write(client.js.code);
+		}
+		
+		if (this.options.saveCss) {
+			await base.reExt(".css").write(server.css.code);
+		}
 	}
 	
 	async build(options) {
@@ -301,11 +330,24 @@ module.exports = class {
 			if (forEmail) {
 				return html;
 			} else {
+				let {
+					assetsPrefix,
+					dir,
+					buildDir,
+				} = this.options;
+				
+				let base = fs(this.path).reparent(dir, buildDir);
+				
+				let jsPath = assetsPrefix + base.reExt(".js").pathFrom(buildDir);
+				let cssPath = assetsPrefix + base.reExt(".css").pathFrom(buildDir);
+				
 				return await this.template.render({
 					head,
 					html,
 					css: css.code,
 					js: js.code,
+					jsPath,
+					cssPath,
 					name: this.name,
 					props,
 				});

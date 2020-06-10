@@ -22,7 +22,11 @@ module.exports = function(opts={}) {
 		liveReload: dev,
 		liveReloadPort: 5000 + Math.floor(Math.random() * 60535),
 		verbose: dev,
-		saveJs: dev,
+		
+		saveJs: true,
+		saveCss: true,
+		
+		jsPrefix: "",
 		
 		transpile: !dev,
 		minify: !dev,
