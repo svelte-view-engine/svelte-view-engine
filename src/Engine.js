@@ -34,6 +34,8 @@ module.exports = class {
 		} else if (options.init) {
 			this._init = this.initPages();
 		}
+		
+		this.render = this.render.bind(this);
 	}
 	
 	createPage(path) {
