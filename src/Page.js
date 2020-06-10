@@ -105,7 +105,7 @@ module.exports = class {
 		}
 		
 		await cmd(`
-			js
+			node
 			${options.buildScript}
 			'${JSON.stringify(json)}'
 		`);
