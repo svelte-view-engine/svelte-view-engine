@@ -3,7 +3,7 @@ svelte-view-engine
 
 svelte-view-engine is an Express-compatible [view engine](https://expressjs.com/en/guide/using-template-engines.html) that renders Svelte components.
 
-Example app: [https://github.com/svelte-view-engine/example](https://github.com/svelte-view-engine/sve-app).
+Example app: [https://github.com/svelte-view-engine/sve-app](https://github.com/svelte-view-engine/sve-app).
 
 ```javascript
 const svelteViewEngine = require("svelte-view-engine");
@@ -84,7 +84,19 @@ This code is defined in a single root template that's used for all pages, with `
 </html>
 ```
 
-CSS and client-side JS are saved to files alongside the built pages.  You can either use these (external, `${jsPath}` and `${cssPath}`), or use the JS and CSS directly (inline, `${js}` and `${css}`.  If you are using external, you need to serve these files statically and set the `assetsPrefix` option to indicate the path they're available under:
+Placeholders:
+
+- `head` - the SSR-rendered markup from any `<svelte:head>` tags.
+- `html` - the SSR-rendered component markup.
+- `css` - the CSS.
+- `js` - the clientside component returned by the build script.
+- `cssPath` - the path to the external CSS file.
+- `jsPath` - the path to the external JS file.
+- `name` - the basename of the .html file, used as the clientside component class name.
+- `props` - a JSON payload of the object you pass to `res.render()`.  See the `payloadFormat` option for formatting options.
+- `include /path/to/file` - replaced with the contents of the file.
+
+CSS and client-side JS are saved to files alongside the built pages.  You can either use these (external, `${jsPath}` and `${cssPath}`), or use the JS and CSS directly as above (inline, `${js}` and `${css}`).  If you are using external, you need to serve these files statically and set the `assetsPrefix` option to indicate the path they're available under:
 
 ```js
 // buildDir option set to "./build/pages"
@@ -103,15 +115,11 @@ express.static("/assets", __dirname + "/../build/pages");
 // ${jsPath} & ${cssPath} include the assetsPrefix
 ```
 
-- `head` - the SSR-rendered markup from any `<svelte:head>` tags.
-- `html` - the SSR-rendered component markup.
-- `css` - the CSS.
-- `js` - the clientside component returned by the build script.
-- `cssPath` - the path to the external CSS file.
-- `jsPath` - the path to the external JS file.
-- `name` - the basename of the .html file, used as the clientside component class name.
-- `props` - a JSON payload of the object you pass to `res.render()`.  See the `payloadFormat` option for formatting options.
-- `include /path/to/file` - replaced with the contents of the file.
+**NOTE**: In recent versions of Svelte (~ 3.17+) there is a `</script>` string literal in the runtime code that will close the inline script tag, so if you are using inline JS you'll need to process it in the build script to split it into two strings:
+
+```
+js.code = js.code.replace("</script>", "<` + `/script>");
+```
 
 Build script
 ============
