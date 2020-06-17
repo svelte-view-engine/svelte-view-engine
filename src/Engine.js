@@ -145,4 +145,8 @@ module.exports = class {
 			}
 		}
 	}
+	
+	renderEmail(path, locals, callback) {
+		return this.render(path, locals, callback, true);
+	}
 }
