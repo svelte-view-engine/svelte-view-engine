@@ -1,7 +1,6 @@
 let {exec} = require("child_process");
 
 module.exports = function(cmd, stdin=null) {
-	console.log(cmd.replace(/\n/g, " "));
 	return new Promise(function(resolve, reject) {
 		let child = exec(cmd.replace(/\n/g, " "), function(error, stdout, stderr) {
 			if (stdout) {
