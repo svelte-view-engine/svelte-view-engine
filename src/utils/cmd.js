@@ -1,16 +1,28 @@
 let {exec} = require("child_process");
-let util = require("util");
 
-let asyncExec = util.promisify(exec);
-
-module.exports = async function(cmd) {
-	let {stdout, stderr} = await asyncExec(cmd.replace(/\n/g, " "));
-	
-	if (stdout) {
-		console.log(stdout);
-	}
-	
-	if (stderr) {
-		console.error(stderr);
-	}
+module.exports = function(cmd, stdin=null) {
+	console.log(cmd.replace(/\n/g, " "));
+	return new Promise(function(resolve, reject) {
+		let child = exec(cmd.replace(/\n/g, " "), function(error, stdout, stderr) {
+			if (stdout) {
+				console.log(stdout);
+			}
+			
+			if (stderr) {
+				console.error(stderr);
+			}
+			
+			if (error) {
+				reject(error);
+			} else {
+				resolve();
+			}
+		});
+		
+		if (stdin) {
+			child.stdin.write(stdin);
+		}
+		
+		child.stdin.end();
+	});
 }

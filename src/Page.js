@@ -92,13 +92,13 @@ module.exports = class {
 			buildDir,
 		} = options;
 		
-		let json = {
+		let json = JSON.stringify({
 			name,
 			path,
 			buildPath: buildFile.path,
 			useCache,
 			options,
-		};
+		});
 		
 		if (await buildFile.exists()) {
 			await buildFile.delete();
@@ -107,8 +107,8 @@ module.exports = class {
 		await cmd(`
 			node
 			${options.buildScript}
-			'${JSON.stringify(json)}'
-		`);
+			'${json}'
+		`, json);
 		
 		let {
 			client,
