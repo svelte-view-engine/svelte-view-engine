@@ -1,9 +1,12 @@
+let cluster = require("cluster");
 let fs = require("flowfs");
 
 module.exports = async function(code, path) {
 	let tmpFile = fs(path);
 	
-	tmpFile = tmpFile.sibling(process.pid + "." + tmpFile.name);
+	if (cluster.isWorker) {
+		tmpFile = tmpFile.sibling(cluster.worker.id + "." + tmpFile.name);
+	}
 	
 	await tmpFile.write(code);
 	
