@@ -254,9 +254,9 @@ app.use(function (req, res, next) {
 Stores/SSR gotchas
 ==================
 
-Svelte stores, and any other global values, must be implemented carefully to avoid sharing values between all users of the app.  Since stores are only useful if they're global, and being global on the server means being shared between all users of the app, svelte-view-engine provides a way to register stores so that they can be cleared before each render.
+Svelte stores, and any other global values, must be implemented carefully to avoid sharing values between all users of the app.  Since stores are only useful if they're global, and being global on the server means being shared between all users of the app, svelte-view-engine provides a hook to do any setting or clearing of stores before each render.
 
-Pass an array of writable stores to the `stores` option to have them cleared.  By default, the value will be set to `undefined`.  To set the value to something else, define a `reset` method on the store, which will be called instead of `set(undefined)` if present.
+Pass a function to the `prerender` option to do the work.  The function will receive a single argument, the view locals.
 
 buildPages()
 ============
@@ -308,4 +308,4 @@ Options
 
 `assetsPrefix`: Path to prepend to external JS/CSS URLs that are available in the root template as `${jsPath}` and `${cssPath}`.  Should include trailing slash.  Defaults to `""`.
 
-`stores`: Optional array of writable stores to reset before each call to `render`.  If the store has a `reset` method, it will be called; otherwise the value will be set to `undefined`.
+`prerender`: Optional function to call before each SSR render.

@@ -258,17 +258,11 @@ module.exports = class {
 			payload.set(locals);
 			
 			/*
-			Clear stores
+			pre-render hook for setting/clearing stores
 			*/
 			
-			if (this.options.stores) {
-				for (let store of this.options.stores) {
-					if (store.reset) {
-						store.reset();
-					} else {
-						store.set(undefined);
-					}
-				}
+			if (this.options.prerender) {
+				this.options.prerender(locals);
 			}
 			
 			/*

@@ -38,7 +38,7 @@ module.exports = function(opts={}) {
 		],
 		
 		dev,
-		stores: null,
+		prerender: null,
 		
 		/*
 		not sure if needed
