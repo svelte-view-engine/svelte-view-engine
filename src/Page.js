@@ -277,7 +277,9 @@ module.exports = class {
 			let css = "";
 			
 			if (this.serverComponent) {
-				({head, html} = this.ssrModule.render(locals));
+				let module = this.ssrModule["default"] || this.ssrModule;
+				
+				({head, html} = module.render(locals));
 				
 				({css} = this.serverComponent);
 			}
