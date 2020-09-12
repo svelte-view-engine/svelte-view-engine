@@ -23,11 +23,11 @@ module.exports = class {
 		
 		if (options.watch) {
 			chokidar.watch(path).on("change", () => {
-				this.ready = false;
+				this.load();
 			});
 		}
 		
-		this.load();
+		this._init = this.load();
 	}
 	
 	async load() {
@@ -69,12 +69,8 @@ module.exports = class {
 		this.ready = true;
 	}
 	
-	async render(replacements) {
+	render(replacements) {
 		let str = "";
-		
-		if (!this.ready) {
-			await this.load();
-		}
 		
 		for (let section of this.sections) {
 			if (section.type in replacements) {

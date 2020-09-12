@@ -9,20 +9,6 @@ let isElectron = require("./utils/isElectron");
 let payload = require("./payload");
 
 /*
-the render() method returns a string containing the complete HTML for the page,
-which can be passed directly back to express.
-
-Template placeholders used:
-
-${head} - svelte:head markup from SSR
-${html} - component markup from SSR
-${css} - component CSS
-${js} - component JS as "var ${name} = function..."
-${name} - the component name used in the var declaration above
-${props} - a JSON-stringified object of props to render
-*/
-
-/*
 saving a .scss file that gets @imported into the .svelte <style>
 triggers a rebuild, but for some reason doesn't use the new css
 if using cached bundles
@@ -44,6 +30,7 @@ module.exports = class {
 	constructor(engine, path) {
 		let {
 			options,
+			buildDir,
 			scheduler,
 			template,
 			liveReloadSocket,
@@ -60,7 +47,16 @@ module.exports = class {
 		this.liveReloadSocket = liveReloadSocket;
 		
 		this.ready = false;
-		this.buildFile = fs(path).reparent(options.dir, options.buildDir).withExt(".json");
+		
+		let base = fs(path).reparent(options.dir, buildDir);
+		
+		this.buildFile = base.withExt(".json");
+		this.jsPath = options.assetsPrefix + base.reExt(".js").pathFrom(buildDir);
+		this.cssPath = options.assetsPrefix + base.reExt(".css").pathFrom(buildDir);
+		
+		if (options.env === "dev") { // dev uses client css only, ssr uses server only
+			this.cssPath = "";
+		}
 		
 		this.active = false;
 		
@@ -86,11 +82,12 @@ module.exports = class {
 		} = this;
 		
 		let {
-			saveJs,
-			saveCss,
 			dir,
-			buildDir,
 		} = options;
+		
+		let {
+			buildDir,
+		} = this.engine;
 		
 		let json = JSON.stringify({
 			name,
@@ -104,11 +101,9 @@ module.exports = class {
 			await buildFile.delete();
 		}
 		
-		await cmd(`
-			node
-			${options.buildScript}
-			'${json}'
-		`, json);
+		let buildScript = fs(__dirname).child("build/build.js");
+		
+		await cmd("node " + buildScript, json);
 		
 		let {
 			client,
@@ -117,21 +112,20 @@ module.exports = class {
 		
 		let base = fs(path).reparent(dir, buildDir);
 		
-		if (this.options.saveJs) {
-			await base.reExt(".js").write(client.js.code);
-		}
-		
-		if (this.options.saveCss) {
-			await base.reExt(".css").write(server.css.code);
-		}
+		await Promise.all([
+			base.reExt(".js").write(client.js.code),
+			base.reExt(".css").write(server.css.code),
+			base.reExt(".server.js").write(server.component.code),
+		]);
 	}
 	
 	async build(options) {
 		let {
 			useCache,
-		} = Object.assign({
+		} = {
 			useCache: false,
-		}, options);
+			...options,
+		};
 		
 		await this.runBuildScript(useCache);
 		await this.init();
@@ -220,150 +214,119 @@ module.exports = class {
 	}
 	
 	async render(locals, forEmail=false) {
-		try {
-			if (locals._rebuild) {
-				await this.build();
-			}
-			
-			if (!this.ready) {
-				if (!this.options.renderBeforeInit) {
-					await this.engine._init;
+		if (locals._rebuild) {
+			await this.build();
+		}
+		
+		if (!this.ready) {
+			await this.init(true);
+		}
+		
+		let _head = false; // HACK https://github.com/sveltejs/svelte/issues/4982
+		
+		locals = {
+			__headOnce() {
+				if (_head) {
+					return false;
 				}
 				
-				await this.init(true);
-			}
-			
-			/*
-			set the payload; render; then unset
-			
-			the payload is global -- this is required to get access to the current
-			value from within the compiled serverside component, and also to make the
-			same module (./payload) work for both server- and client-side code.
-			*/
-			
-			let _head = false; // HACK https://github.com/sveltejs/svelte/issues/4982
-			
-			locals = Object.assign({
-				__headOnce() {
-					if (_head) {
-						return false;
-					}
-					
-					_head = true;
-					
-					return true;
-				},
-			}, locals);
-			
-			payload.set(locals);
-			
-			/*
-			pre-render hook for setting/clearing stores
-			*/
-			
-			if (this.options.prerender) {
-				this.options.prerender(locals);
-			}
-			
-			/*
-			note that we don't use .css from render() - this only includes CSS for
-			child components that happen to be rendered this time.  we use
-			serverComponent.css, which has CSS for all components that are imported
-			(ie all components that could possibly be rendered)
-			*/
-			
-			let head = "";
-			let html = "";
-			let css = "";
-			
-			if (this.serverComponent) {
-				let module = this.ssrModule["default"] || this.ssrModule;
+				_head = true;
 				
-				({head, html} = module.render(locals));
-				
+				return true;
+			},
+			
+			...locals,
+		};
+		
+		payload.set(locals);
+		
+		/*
+		pre-render hook for setting/clearing stores
+		*/
+		
+		if (this.options.prerender) {
+			this.options.prerender(locals);
+		}
+		
+		/*
+		note that we don't use .css from render() - this only includes CSS for
+		child components that happen to be rendered this time.  we use
+		serverComponent.css, which has CSS for all components that are imported
+		(ie all components that could possibly be rendered)
+		*/
+		
+		let head = "";
+		let html = "";
+		let css = "";
+		
+		if (this.serverComponent) {
+			let module = this.ssrModule["default"] || this.ssrModule;
+			
+			({head, html} = module.render(locals));
+			
+			if (this.options.env !== "dev") {
 				({css} = this.serverComponent);
 			}
-			
-			let {js} = this.clientComponent;
-			
-			let json = JSON.stringify(locals);
-			let props = json;
-			
-			if (this.options.payloadFormat === "templateString") {
-				props = "`" + json.replace(/\\/g, "\\\\") + "`";
-			}
-			
-			if (this.liveReloadSocket) {
-				head += `
-					<script>
-						var socket;
+		}
+		
+		let {js} = this.clientComponent;
+		
+		let json = JSON.stringify(locals);
+		let props = json;
+		
+		if (this.options.payloadFormat === "templateString") {
+			props = "`" + json.replace(/\\/g, "\\\\") + "`";
+		}
+		
+		if (this.liveReloadSocket) {
+			head += `
+				<script>
+					var socket;
+					
+					function createSocket() {
+						socket = new WebSocket("ws://" + location.hostname + ":${this.options.liveReloadPort}");
 						
-						function createSocket() {
-							socket = new WebSocket("ws://" + location.hostname + ":${this.options.liveReloadPort}");
-							
-							socket.addEventListener("message", function(message) {
-								if (message.data === "${this.path}") {
-									location.reload();
-								}
-							});
-							
-							socket.addEventListener("close", function() {
-								setTimeout(createSocket, 500);
-							});
-						}
+						socket.addEventListener("message", function(message) {
+							if (message.data === "${this.path}") {
+								location.reload();
+							}
+						});
 						
-						function heartbeat() {
-							socket.send("${this.path}");
-						}
-						
-						createSocket();
-						
-						setInterval(heartbeat, 1000);
-					</script>
-				`;
-			}
+						socket.addEventListener("close", function() {
+							setTimeout(createSocket, 500);
+						});
+					}
+					
+					function heartbeat() {
+						socket.send("${this.path}");
+					}
+					
+					createSocket();
+					
+					setInterval(heartbeat, 1000);
+				</script>
+			`;
+		}
+		
+		if (forEmail) {
+			return html;
+		} else {
+			let {
+				name,
+				jsPath,
+				cssPath,
+			} = this;
 			
-			if (forEmail) {
-				return html;
-			} else {
-				let {
-					assetsPrefix,
-					dir,
-					buildDir,
-				} = this.options;
-				
-				let base = fs(this.path).reparent(dir, buildDir);
-				
-				let jsPath = assetsPrefix + base.reExt(".js").pathFrom(buildDir);
-				let cssPath = assetsPrefix + base.reExt(".css").pathFrom(buildDir);
-				
-				return await this.template.render({
-					head,
-					html,
-					css: css.code,
-					js: js.code,
-					jsPath,
-					cssPath,
-					name: this.name,
-					props,
-				});
-			}
-		} catch (e) {
-			if (this.options.rebuildOnRenderError) {
-				/*
-				for dev - just means we can refresh the page as soon as
-				we fix it after a 500 and it'll wait for the rebuild, so
-				we don't have to keep refreshing and getting the 500
-				until it's finished
-				*/
-				
-				this.ready = false;
-				this.buildFile.deleteIfExists();
-			}
-			
-			throw e;
-		} finally {
-			payload.set(null);
+			return this.template.render({
+				head,
+				html,
+				css: css.code,
+				js: js.code,
+				jsPath,
+				cssPath,
+				name,
+				props,
+			});
 		}
 	}
 }

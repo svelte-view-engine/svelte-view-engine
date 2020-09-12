@@ -1,6 +1,7 @@
 let ws = require("ws");
 let fs = require("flowfs");
 let Bluebird = require("bluebird");
+let getPort = require("get-port");
 let isElectron = require("./utils/isElectron");
 let Page = require("./Page");
 let Template = require("./Template");
@@ -11,31 +12,31 @@ module.exports = class {
 		this.options = options;
 		this.dir = options.dir;
 		this.type = options.type;
+		this.buildDir = fs(options.buildDir).child(options.env).path;
 		
 		this.template = new Template(options.template, {
 			watch: options.watch,
 		});
 		
 		this.scheduler = buildScheduler(options);
-		this.liveReloadSocket = null;
 		this.pages = {};
+		this.init();
+		this.render = this.render.bind(this);
+	}
 	
-		if (options.liveReload && !isElectron) {
+	async init() {
+		if (this.options.liveReload && !isElectron) {
 			this.liveReloadSocket = new ws.Server({
-				port: options.liveReloadPort,
+				port: await getPort(),
 			});
 			
 			// remove default EventEmitter limit
 			this.liveReloadSocket.setMaxListeners(0);
 		}
 		
-		if (options.build) {
-			this.buildPages();
-		} else if (options.init) {
-			this._init = this.initPages();
+		if (options.init) {
+			this.initPages();
 		}
-		
-		this.render = this.render.bind(this);
 	}
 	
 	createPage(path) {
@@ -55,6 +56,14 @@ module.exports = class {
 		
 		this.pagesCreated = true;
 	}
+
+	async awaitPendingBuilds() {
+		await this.scheduler.awaitPendingBuilds();
+	}
+	
+	hasPendingBuilds() {
+		return this.scheduler.hasPendingBuilds();
+	}
 	
 	/*
 	build/init
@@ -68,17 +77,8 @@ module.exports = class {
 	pages are built if there is no build file, but not rebuilt if it is
 	out of date.  use this on dev, where it doesn't matter if you see an
 	out of date page now and then (watching should keep everything up to
-	date); and on prod -- on prod, use prebuilt pages.  this also sets
-	.init to a promise that resolves when all pages are init'ed.
+	date); and on prod -- on prod, use prebuilt pages.
 	*/
-
-	async awaitPendingBuilds() {
-		await this.scheduler.awaitPendingBuilds();
-	}
-	
-	hasPendingBuilds() {
-		return this.scheduler.hasPendingBuilds();
-	}
 	
 	async buildPages(pages=null) {
 		await this.createPages();
@@ -103,14 +103,16 @@ module.exports = class {
 	*/
 	
 	async initPages() {
-		this.initialising = true;
-		
 		await this.createPages();
 		
 		await Bluebird.map(Object.values(this.pages), page => page.init());
 	}
 	
 	async render(path, locals, callback, forEmail=false) {
+		if (!this.template.ready) {
+			await this.template._init();
+		}
+		
 		if (path[0] !== "/") {
 			path = this.dir + "/" + path + "." + this.type;
 		}
