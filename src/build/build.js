@@ -10,7 +10,7 @@ let buildDom = require("./buildDomComponent");
 			name,
 			path,
 			buildPath,
-			options,
+			config,
 			useCache,
 		} = JSON.parse(await readStream(process.stdin));
 		
@@ -24,8 +24,8 @@ let buildDom = require("./buildDomComponent");
 			cache.server = server.cache;
 		}
 		
-		let server = await buildSsr(path, options, cache.server);
-		let client = await buildDom(path, name, options, cache.client);
+		let server = await buildSsr(path, config, cache.server);
+		let client = await buildDom(path, name, config, cache.client);
 		
 		await buildFile.parent.mkdirp();
 		

@@ -12,7 +12,11 @@ module.exports = async function(code, path) {
 	
 	delete require.cache[require.resolve(tmpFile.path)];
 	
-	let module = require(tmpFile.path);
+	let module;
+	
+	try {
+		module = require(tmpFile.path);
+	} catch (e) {}
 	
 	await tmpFile.delete();
 	

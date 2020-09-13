@@ -29,7 +29,7 @@ let idleTimeout = 1000 * 15;
 module.exports = class {
 	constructor(engine, path) {
 		let {
-			options,
+			config,
 			buildDir,
 			scheduler,
 			template,
@@ -38,23 +38,23 @@ module.exports = class {
 		
 		this.engine = engine;
 		this.path = path;
-		this.relativePath = fs(path).pathFrom(options.dir);
+		this.relativePath = fs(path).pathFrom(config.dir);
 		this.name = validIdentifier(fs(path).basename);
 		
-		this.options = options;
+		this.config = config;
 		this.scheduler = scheduler;
 		this.template = template;
 		this.liveReloadSocket = liveReloadSocket;
 		
 		this.ready = false;
 		
-		let base = fs(path).reparent(options.dir, buildDir);
+		let base = fs(path).reparent(config.dir, buildDir);
 		
 		this.buildFile = base.withExt(".json");
-		this.jsPath = options.assetsPrefix + base.reExt(".js").pathFrom(buildDir);
-		this.cssPath = options.assetsPrefix + base.reExt(".css").pathFrom(buildDir);
+		this.jsPath = config.assetsPrefix + base.reExt(".js").pathFrom(buildDir);
+		this.cssPath = config.assetsPrefix + base.reExt(".css").pathFrom(buildDir);
 		
-		if (options.env === "dev") { // dev uses client css only, ssr uses server only
+		if (config.env === "dev") { // dev uses client css only, ssr uses server only
 			this.cssPath = "";
 		}
 		
@@ -77,13 +77,13 @@ module.exports = class {
 		let {
 			name,
 			path,
-			options,
+			config,
 			buildFile,
 		} = this;
 		
 		let {
 			dir,
-		} = options;
+		} = config;
 		
 		let {
 			buildDir,
@@ -94,14 +94,14 @@ module.exports = class {
 			path,
 			buildPath: buildFile.path,
 			useCache,
-			options,
+			config,
 		});
 		
 		if (await buildFile.exists()) {
 			await buildFile.delete();
 		}
 		
-		let buildScript = fs(__dirname).child("build/build.js");
+		let buildScript = fs(__dirname).child("build/build.js").path;
 		
 		await cmd("node " + buildScript, json);
 		
@@ -119,12 +119,12 @@ module.exports = class {
 		]);
 	}
 	
-	async build(options) {
+	async build(config) {
 		let {
 			useCache,
 		} = {
 			useCache: false,
-			...options,
+			...config,
 		};
 		
 		await this.runBuildScript(useCache);
@@ -154,7 +154,7 @@ module.exports = class {
 			throw e;
 		}
 		
-		if (this.options.watch) {
+		if (this.config.watch) {
 			if (this.watcher) {
 				this.watcher.close();
 			}
@@ -177,7 +177,7 @@ module.exports = class {
 			});
 		}
 		
-		if (this.options.liveReload) {
+		if (this.config.liveReload) {
 			if (isElectron) {
 				let {BrowserWindow} = require("electron");
 				
@@ -244,8 +244,8 @@ module.exports = class {
 		pre-render hook for setting/clearing stores
 		*/
 		
-		if (this.options.prerender) {
-			this.options.prerender(locals);
+		if (this.config.prerender) {
+			this.config.prerender(locals);
 		}
 		
 		/*
@@ -264,7 +264,7 @@ module.exports = class {
 			
 			({head, html} = module.render(locals));
 			
-			if (this.options.env !== "dev") {
+			if (this.config.env !== "dev") {
 				({css} = this.serverComponent);
 			}
 		}
@@ -274,7 +274,7 @@ module.exports = class {
 		let json = JSON.stringify(locals);
 		let props = json;
 		
-		if (this.options.payloadFormat === "templateString") {
+		if (this.config.payloadFormat === "templateString") {
 			props = "`" + json.replace(/\\/g, "\\\\") + "`";
 		}
 		
@@ -284,7 +284,7 @@ module.exports = class {
 					var socket;
 					
 					function createSocket() {
-						socket = new WebSocket("ws://" + location.hostname + ":${this.options.liveReloadPort}");
+						socket = new WebSocket("ws://" + location.hostname + ":${this.config.liveReloadPort}");
 						
 						socket.addEventListener("message", function(message) {
 							if (message.data === "${this.path}") {

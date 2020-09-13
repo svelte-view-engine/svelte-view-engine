@@ -8,24 +8,22 @@ let Template = require("./Template");
 let buildScheduler = require("./buildScheduler");
 
 module.exports = class {
-	constructor(options) {
-		this.options = options;
-		this.dir = options.dir;
-		this.type = options.type;
-		this.buildDir = fs(options.buildDir).child(options.env).path;
+	constructor(config) {
+		this.config = config;
+		this.dir = config.dir;
+		this.type = config.type;
+		this.buildDir = fs(config.buildDir).child(config.env).path;
 		
-		this.template = new Template(options.template, {
-			watch: options.watch,
-		});
+		this.template = new Template(config);
 		
-		this.scheduler = buildScheduler(options);
+		this.scheduler = buildScheduler(config);
 		this.pages = {};
 		this.init();
 		this.render = this.render.bind(this);
 	}
 	
 	async init() {
-		if (this.options.liveReload && !isElectron) {
+		if (this.config.liveReload && !isElectron) {
 			this.liveReloadSocket = new ws.Server({
 				port: await getPort(),
 			});
@@ -34,7 +32,7 @@ module.exports = class {
 			this.liveReloadSocket.setMaxListeners(0);
 		}
 		
-		if (options.init) {
+		if (this.config.init) {
 			this.initPages();
 		}
 	}
@@ -48,7 +46,7 @@ module.exports = class {
 			return;
 		}
 		
-		let files = await fs(this.options.dir).glob("**/*." + this.options.type);
+		let files = await fs(this.config.dir).glob("**/*." + this.config.type);
 		
 		for (let node of files) {
 			this.pages[node.path] = this.createPage(node.path);
@@ -88,7 +86,7 @@ module.exports = class {
 				this.scheduler.scheduleBuild(this.pages[path]);
 			}
 		} else {
-			await fs(this.options.buildDir).rmrf();
+			await fs(this.config.buildDir).rmrf();
 			
 			for (let page of Object.values(this.pages)) {
 				this.scheduler.scheduleBuild(page);
@@ -126,7 +124,7 @@ module.exports = class {
 		let page = this.pages[path];
 		
 		for (let p in locals) {
-			if (!this.options.excludeLocals.includes(p)) {
+			if (!this.config.excludeLocals.includes(p)) {
 				sendLocals[p] = locals[p];
 			}
 		}

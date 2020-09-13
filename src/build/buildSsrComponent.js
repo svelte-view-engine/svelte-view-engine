@@ -5,14 +5,15 @@ let resolve = require("rollup-plugin-node-resolve");
 let commonjs = require("rollup-plugin-commonjs");
 let sass = require("./sass");
 
-module.exports = async function(path, options, cache) {
+module.exports = async function(path, config, cache) {
+	let dev = config.env === "dev";
 	let css;
 	
 	let inputOptions = {
 		input: path,
 		
 		external(id, parentId, resolved) {
-			if (!options.svelteDirs) {
+			if (!config.svelteDirs) {
 				return false;
 			}
 			
@@ -25,7 +26,7 @@ module.exports = async function(path, options, cache) {
 				file = root.child("node_modules").child(id);
 			}
 			
-			return options.svelteDirs.every(function(dir) {
+			return config.svelteDirs.every(function(dir) {
 				return file.path !== dir.path && !file.within(dir);
 			});
 		},
@@ -46,7 +47,7 @@ module.exports = async function(path, options, cache) {
 				
 				onwarn() {},
 			
-				dev: options.dev,
+				dev,
 			}),
 	
 			resolve({
@@ -72,7 +73,7 @@ module.exports = async function(path, options, cache) {
 	let {output} = await bundle.generate(outputOptions);
 	
 	return {
-		cache: options.cache && bundle.cache,
+		cache: dev && bundle.cache,
 		component: output[0].code,
 		css,
 	};

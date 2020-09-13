@@ -16,13 +16,13 @@ prior to any rendering.
 */
 
 module.exports = class {
-	constructor(path, options) {
-		this.path = path;
+	constructor(config) {
+		this.path = config.template;
 		this.ready = false;
 		this.sections = [];
 		
-		if (options.watch) {
-			chokidar.watch(path).on("change", () => {
+		if (config.watch) {
+			chokidar.watch(this.path).on("change", () => {
 				this.load();
 			});
 		}

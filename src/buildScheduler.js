@@ -14,12 +14,12 @@ awaits on them will NOT throw.  check inProgressBuild.error if it
 matters whether the promise resolved, or just settled.
 */
 
-module.exports = function(options) {
+module.exports = function(config) {
 	let inProgressBuilds = [];
 	let buildQueue = [];
 	
 	function log(...args) {
-		if (options.verbose) {
+		if (config.verbose) {
 			console.log(...args);
 		}
 	}
@@ -27,7 +27,7 @@ module.exports = function(options) {
 	function checkQueue() {
 		let toBuild = buildQueue.filter(function({page}) {
 			return !inProgressBuilds.find(b => b.page === page);
-		}).slice(0, options.buildConcurrency - inProgressBuilds.length);
+		}).slice(0, config.buildConcurrency - inProgressBuilds.length);
 		
 		if (toBuild.length > 0) {
 			log("Building:");
@@ -36,13 +36,13 @@ module.exports = function(options) {
 		for (let manifest of toBuild) {
 			let {
 				page,
-				options,
+				config,
 			} = manifest;
 			
 			log(
 				"    - "
 				+ page.relativePath
-				+ (options ? " " + JSON.stringify(options) : "")
+				+ (config ? " " + JSON.stringify(config) : "")
 			);
 			
 			remove(buildQueue, manifest);
@@ -50,7 +50,7 @@ module.exports = function(options) {
 			let inProgressBuild = {
 				page,
 				
-				promise: page.build(options).catch(function(e) {
+				promise: page.build(config).catch(function(e) {
 					log(
 						"Page "
 						+ page.relativePath
@@ -81,17 +81,17 @@ module.exports = function(options) {
 		}
 	}
 	
-	function scheduleBuild(page, priority, options) {
+	function scheduleBuild(page, priority, config) {
 		let manifest = {
 			page,
-			options,
+			config,
 		};
 		
 		log(
 			"Scheduling "
 			+ page.relativePath
 			+ (priority ? " (priority)" : "")
-			+ (options ? " " + JSON.stringify(options) : "")
+			+ (config ? " " + JSON.stringify(config) : "")
 		);
 		
 		if (priority) {
@@ -107,7 +107,7 @@ module.exports = function(options) {
 		return inProgressBuilds.find(b => b.page === page);
 	}
 	
-	async function build(page, priority, options) {
+	async function build(page, priority, config) {
 		log(
 			"Build next: "
 			+ page.relativePath
@@ -132,7 +132,7 @@ module.exports = function(options) {
 		if (!inProgressBuild) {
 			log(page.relativePath + ": scheduling build");
 			
-			scheduleBuild(page, priority, options);
+			scheduleBuild(page, priority, config);
 			
 			while (!(inProgressBuild = findInProgressBuild(page))) {
 				log(page.relativePath + ": waiting for build slot");

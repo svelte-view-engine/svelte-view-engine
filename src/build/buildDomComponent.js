@@ -9,7 +9,12 @@ let sass = require("./sass");
 
 let pathStartRe = /([A-Z]:|\/)/;
 
-module.exports = async function(path, name, options, cache) {
+module.exports = async function(path, name, config, cache) {
+	let prod = config.env === "prod";
+	let dev = !prod;
+	let transpile = prod;
+	let minify = prod;
+	
 	let inputOptions = {
 		input: path,
 		cache,
@@ -22,11 +27,11 @@ module.exports = async function(path, name, options, cache) {
 					style: sass,
 				},
 				
-				css: options.env === "dev",
+				css: dev,
 				
 				onwarn() {},
 				
-				dev: options.dev,
+				dev,
 			}),
 	
 			resolve({
@@ -47,7 +52,7 @@ module.exports = async function(path, name, options, cache) {
 	
 	let outputOptions = {
 		name,
-		format: options.transpile ? "cjs" : "iife",
+		format: transpile ? "cjs" : "iife",
 	};
 	
 	let bundle = await rollup.rollup(inputOptions);
@@ -56,16 +61,16 @@ module.exports = async function(path, name, options, cache) {
 	
 	let js = output[0];
 	
-	if (options.transpile) {
+	if (transpile) {
 		js = await babel(path, name, js.code);
 	}
 	
-	if (options.minify) {
+	if (minify) {
 		js = terser.minify(js.code);
 	}
 	
 	return {
-		cache: options.cache && bundle.cache,
+		cache: dev && bundle.cache,
 		js,
 		
 		watchFiles: bundle.watchFiles.map(function(path) {
