@@ -83,6 +83,7 @@ module.exports = class {
 		
 		let {
 			dir,
+			buildScript,
 		} = config;
 		
 		let {
@@ -97,26 +98,7 @@ module.exports = class {
 			config,
 		});
 		
-		if (await buildFile.exists()) {
-			await buildFile.delete();
-		}
-		
-		let buildScript = fs(__dirname).child("build/build.js").path;
-		
-		await cmd("node " + buildScript, json);
-		
-		let {
-			client,
-			server,
-		} = await buildFile.readJson();
-		
-		let base = fs(path).reparent(dir, buildDir);
-		
-		await Promise.all([
-			base.reExt(".js").write(client.js.code),
-			base.reExt(".css").write(server.css.code),
-			base.reExt(".server.js").write(server.component.code),
-		]);
+		await cmd(`node ${buildScript} '${json}'`, json);
 	}
 	
 	async build(config) {

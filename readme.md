@@ -6,9 +6,7 @@ svelte-view-engine is an Express-compatible [view engine](https://expressjs.com/
 14.x release note
 -----------------
 
-Version 14 moves the Svelte build process into the project to simplify the intreface and avoid having large build scripts in your app.  Migrating from earlier versions should mostly be a case of removing these scripts and a number of other options from your config.  If you see issues after upgrading, create an issue(s) on [GitHub](https://github.com/svelte-view-engine/svelte-view-engine).
-
-The build uses rollup.
+Version 14 includes a Svelte build script to simplify the interface and avoid having large build scripts in your app.  The build uses rollup and transpiles to ES5 in production.  You can still supply a custom build script via the `buildScript` option.
 
 Example app: [https://github.com/svelte-view-engine/sve-app](https://github.com/svelte-view-engine/sve-app).
 
@@ -245,3 +243,5 @@ Options
 `payloadFormat`: Format of the `${props}` placeholder value.  Defaults to `"json"`, which inserts a string of JSON directly (must be inserted into a script tag as JSON can contain both single and double quotes).  Set to `"templateString"` to wrap the JSON as a backtick-quoted string.  String values in the JSON must not contain unescaped backticks if using this option.
 
 `svelteDirs`: Optional.  Pass an array of directories that contain Svelte files to mark files NOT within those directories as external for rolling up SSR modules.  If ommitted, no modules will be treated as external.  The purpose of this is to avoid having copies of e.g. utility scripts bundled into every SSR module.
+
+`buildScript`: Optional.  Path to a custom build script.  The build script should accept a JSON payload on either stdin or as the only argument (both are provided), and write out the JSON manifest and CSS/JS files for the page (see [https://github.com/svelte-view-engine/svelte-view-engine/blob/master/src/build/build.js](https://github.com/svelte-view-engine/svelte-view-engine/blob/master/src/build/build.js).

@@ -33,6 +33,15 @@ let buildDom = require("./buildDomComponent");
 			server,
 			client,
 		});
+		
+		let buildDir = fs(config.buildDir).child(config.env);
+		let base = fs(path).reparent(config.dir, buildDir);
+		
+		await Promise.all([
+			base.reExt(".js").write(client.js.code),
+			base.reExt(".css").write(server.css.code),
+			base.reExt(".server.js").write(server.component.code),
+		]);
 	} catch (e) {
 		console.error(e);
 		

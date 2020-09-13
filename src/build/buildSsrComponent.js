@@ -70,11 +70,12 @@ module.exports = async function(path, config, cache) {
 	
 	let bundle = await rollup.rollup(inputOptions);
 	
+	let {output} = await bundle.generate(outputOptions);
+	
 	//await bundle.write({
+	//	format: "cjs",
 	//	dir: fs(path).parent.path,
 	//});
-	
-	let {output} = await bundle.generate(outputOptions);
 	
 	return {
 		cache: dev && bundle.cache,

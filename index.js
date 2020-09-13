@@ -1,4 +1,5 @@
 let os = require("os");
+let fs = require("flowfs");
 let Engine = require("./src/Engine");
 
 module.exports = function(opts={}) {
@@ -30,6 +31,7 @@ module.exports = function(opts={}) {
 		buildConcurrency: os.cpus().length,
 		verbose: dev,
 		renderBeforeInit: dev,
+		buildScript: fs(__dirname).child("src/build/build.js").path,
 		
 		excludeLocals: [
 			"_locals",

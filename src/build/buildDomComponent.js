@@ -59,13 +59,13 @@ module.exports = async function(path, name, config, cache) {
 	
 	let bundle = await rollup.rollup(inputOptions);
 	
+	let {output} = await bundle.generate(outputOptions);
+	
 	if (dynamicImports) {
 		await bundle.write({
 			dir: fs(path).parent.reparent(config.dir, buildDirFull).path,
 		});
 	}
-	
-	let {output} = await bundle.generate(outputOptions);
 	
 	let js = output[0];
 	

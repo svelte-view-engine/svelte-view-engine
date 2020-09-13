@@ -1,6 +1,6 @@
 let ws = require("ws");
 let fs = require("flowfs");
-let Bluebird = require("bluebird");
+let bluebird = require("bluebird");
 let getPort = require("get-port");
 let isElectron = require("./utils/isElectron");
 let Page = require("./Page");
@@ -110,7 +110,7 @@ module.exports = class {
 	async initPages() {
 		await this.createPages();
 		
-		await Bluebird.map(Object.values(this.pages), page => page.init());
+		await bluebird.map(Object.values(this.pages), page => page.init());
 	}
 	
 	async render(path, locals, callback, forEmail=false) {
