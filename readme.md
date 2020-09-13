@@ -3,24 +3,24 @@ svelte-view-engine
 
 svelte-view-engine is an Express-compatible [view engine](https://expressjs.com/en/guide/using-template-engines.html) that renders Svelte components.
 
+14.x release note
+-----------------
+
+Version 14 moves the Svelte build process into the project to simplify the intreface and avoid having large build scripts in your app.  Migrating from earlier versions should mostly be a case of removing these scripts and a number of other options from your config.  If you see issues after upgrading, create an issue(s) on [GitHub](https://github.com/svelte-view-engine/svelte-view-engine).
+
+The build uses rollup.
+
 Example app: [https://github.com/svelte-view-engine/sve-app](https://github.com/svelte-view-engine/sve-app).
 
 ```javascript
 const svelteViewEngine = require("svelte-view-engine");
 
 let engine = svelteViewEngine({
-	template: "./template.html", // see Root template below
+	env: "dev",
+	template: "./template.html",
 	dir: "./pages",
 	type: "html",
-	init: true,
-	watch: true,
-	liveReload: true,
-	// See Build script below
-	buildScript: "./scripts/svelte/build.js",
-	buildDir: "/tmp/svelte-build",
-	stores: [
-		// see Stores/SSR gotchas
-	],
+	buildDir: "../artifacts/pages",
 });
 
 app.engine(engine.type, engine.render);
@@ -36,16 +36,12 @@ app.get("/", (req, res) => {
 });
 ```
 
-It can also be used outside of Express.  `svelteViewEngine(options)` returns an object with `render(path, locals[, callback])`.  If `callback` is supplied it is called with `(error, html)`, otherwise a promise is returned.
-
 Design
 ======
 
 The motivation behind svelte-view-engine is to be able to build the view layer of a web app using a hierarchy of Svelte components and as little else as possible, while not having to buy in to a full app framework.
 
 It is therefore a view engine (like Pug or EJS) as opposed to an app framework (like [Sapper](https://sapper.svelte.dev) or [Next.js](https://nextjs.org)).
-
-svelte-view-engine doesn't know how to compile Svelte components itself; you pass it the path to a build script.  This allows you to use your existing Svelte build process, or write one for your specific use case.  See the [example app](https://github.com/svelte-view-engine/sve-app) for an example of this.
 
 Root template
 =============
@@ -77,7 +73,7 @@ This code is defined in a single root template that's used for all pages, with `
 			new ${name}({
 				target: document.body,
 				props: props,
-				hydrate: true,
+				hydrate: true
 			});
 		</script>
 	</body>
@@ -89,70 +85,29 @@ Placeholders:
 - `head` - the SSR-rendered markup from any `<svelte:head>` tags.
 - `html` - the SSR-rendered component markup.
 - `css` - the CSS.
-- `js` - the clientside component returned by the build script.
 - `cssPath` - the path to the external CSS file.
 - `jsPath` - the path to the external JS file.
-- `name` - the basename of the .html file, used as the clientside component class name.
+- `name` - the basename of the .html file, used as the clientside component class name (sanitised to make it a valid identifier).
 - `props` - a JSON payload of the object you pass to `res.render()`.  See the `payloadFormat` option for formatting options.
 - `include /path/to/file` - replaced with the contents of the file.
 
-CSS and client-side JS are saved to files alongside the built pages.  You can either use these (external, `${jsPath}` and `${cssPath}`), or use the JS and CSS directly as above (inline, `${js}` and `${css}`).  If you are using external, you need to serve these files statically and set the `assetsPrefix` option to indicate the path they're available under:
+CSS and client-side JS are saved alongside the built pages.  For CSS you can either use `${cssPath}` in a `link`, or `${css}` in a `<style>` tag.  Unfortunately there is a closing `</script>` tag in the Svelte runtime code (see [this issue](https://github.com/sveltejs/svelte/issues/4980)), so JS must be referenced externally.  The `${js}` placeholder is still available to use in an inline `<script>` in case you have a workaround.
+
+JS and CSS (if not inline) must be served somehow, e.g. with `express.static()`, and the `assetsPrefix` option set to the path they're available at:
 
 ```js
-// buildDir option set to "./build/pages"
-// assetsPrefix option set to "/assets/"
+// buildDir set to "./artifacts/pages"
+// assetsPrefix set to "/assets/"
 
-// in ./src/app.js:
+// ./src/app.js:
 
-express.static("/assets", __dirname + "/../build/pages");
+express.static("/assets", __dirname + "/../artifacts/pages");
 
-// in ./src/template.html:
+// ./src/template.html:
 
 // <link rel="stylesheet" href="${cssPath}">
 // ...
 // <script src="${jsPath}"></script>
-
-// ${jsPath} & ${cssPath} include the assetsPrefix
-```
-
-**NOTE**: In recent versions of Svelte (~ 3.17+) there is a `</script>` string literal in the runtime code that will close the inline script tag, so if you are using inline JS you'll need to process it in the build script to split it into two strings:
-
-```
-js.code = js.code.replace("</script>", "<` + `/script>");
-```
-
-Build script
-============
-
-This is a separate script, as opposed to a passed-in function, so that the build process doesn't inflate the memory usage of the main app.  It should accept one command-line argument, a JSON payload of the following form:
-
-```
-{
-	name, // Component
-	path, // /src/path/to/Component.html
-	buildPath, // /build/path/to/Component.html.json
-	options, // The options passed to svelteViewEngine
-	useCache, // Use cached bundles
-}
-```
-
-It should compile the component and write JSON out to `buildPath` with the following form:
-
-```
-{
-	client: {
-		cache, // options.cache && bundle.cache
-		js, // clientside js
-		watchFiles, // list of paths to watch for changes
-	},
-	
-	// server is optional; leave out to disable SSR
-	server: {
-		cache, // options.cache && bundle.cache
-		component, // serverside js
-		css, // css
-	},
-}
 ```
 
 Props/payload
@@ -160,9 +115,9 @@ Props/payload
   
 The `svelte-view-engine/payload` module makes view locals available to all components, clientside and serverside.  To achieve this, the props of the currently-rendering page are stored in a global variable called `props`.  On the server, this holds the original object passed to `res.render()`.  On the client, it's inserted into the root template as a string of JSON.  It can be injected into the template in various ways, depending on your setup:
 
-- set the `payloadFormat` option to `"templateString"` to get the props as a template string: `props = ${props};` -> `props = [backtick]{"a":1}[backtick];`
+- set `payloadFormat` to `"templateString"` to get the props as a template string: `props = ${props};` -> `props = [backtick]{"a":1}[backtick];`
 
-- evaluate the JSON directly as JavaScript: `props = ${props};` -> `props = {"a":1};`
+- set `payloadFormat` to `"json"` (the default) and evaluate the JSON directly as JavaScript: `props = ${props};` -> `props = {"a":1};`
 
 - put the JSON string into a script tag:
 
@@ -215,31 +170,14 @@ You can also just use `export let` as normal:
 
 When to use `payload` instead of `export let`:
 
-- You want to access the props from a sub-component without having to pass them in explicitly from the top-level page component.
+- You want to access props from a sub-component without having to pass them down the hierarchy.
 
 - You need to process the data somehow before using it, for example to parse it using a JSON reviver function that depends on your app code.  In this case you would write a module that reads the payload and exposes the modified version, then use that module in your pages.
-
-Build scheduling
-================
-
-When you modify a component that's used by many pages, with a naive approach all of these pages would immediately see the change and rebuild themselves, meaning you might have to wait for all of them to rebuild before seeing your changes.  Also, when building pages for the first time, building them all at once can use up a lot of memory.
-
-To solve these issues there are two features: priority builds/active pages; and the `buildConcurrency` option.
-
-Active pages
-------------
-
-In development, pages keep a websocket open with a regular heartbeat to keep track of whether they're open in a browser (active).  On dependency changes, inactive pages wait for 100ms before scheduling themselves for rebuild, to allow active pages to see the change and schedule themselves first.  Active pages also pass a "priority" argument to the scheduler, which means they get added to the front of the build queue.
-
-buildConcurrency
-----------------
-
-`buildConcurrency` defaults to `os.cpus().length`, and limits the number of concurrent build processes to limit memory consumption while maximising CPU utilisation.
 
 _rebuild
 ========
 
-If `props._rebuild` is true, the page is rebuilt before being rendered.  This can be hooked up to the hard reload feature in Chrome via the Cache-Control header (sometimes it's useful to be able to force a rebuild in development, for example if the app has been offline while making changes to components, in which case they wouldn't be picked up for rebuild and the app would have an out of date version):
+If `props._rebuild` is true, the page is rebuilt before being rendered.  This can be hooked up to the hard reload feature in Chrome via the Cache-Control header (file watching should make sure pages are rebuilt when a dependency changes, but sometimes it's useful to be able to force a rebuild in development, for example if the app has been offline while making changes):
 
 ```
 app.use(function (req, res, next) {
@@ -258,54 +196,52 @@ Svelte stores, and any other global values, must be implemented carefully to avo
 
 Pass a function to the `prerender` option to do the work.  The function will receive a single argument, the view locals.
 
-buildPages()
-============
+Building pages for production
+=============================
+
+If you look in the `dir` directory, you'll notice the files are all stored under a directory named after the env used when building them.  If you haven't built pages for production yet, this will just contain `dev`.
+
+To build pages for production, create a file called `svelte-view-engine.js` and export your config from it (the same object you pass to `svelteViewEngine` when instantiating it to pass to Express):
 
 ```
-let engine = svelteViewEngine(...);
-
-await engine.buildPages();
+module.exports = {
+	env: "dev",
+	template: "./template.html",
+	dir: "./pages",
+	type: "html",
+	buildDir: "../artifacts/pages",
+};
 ```
 
-Build all the pages in the pages dir.  Returns a promise that resolves when all pages are built.  This is useful for scripts, e.g. pre-building pages for inclusion in a Docker image.
+Then run `$ npx svelte-view-engine build prod`.
+
+This will create a directory called `prod` under `dir` (if it doesn't exist already), and output prod page files to it.
 
 Options
 =======
 
-`dev` = `process.env.NODE_ENV !== "production"`
+`env`: `"dev"` or `"prod"`.  Defaults to `"prod"`.
 
 `template`: Path to root template.
 
-`payloadFormat`: Format of the `${props}` placeholder value.  Defaults to `"json"`, which inserts a string of JSON directly (must be inserted into a script tag as JSON can contain both single and double quotes).  Set to `"templateString"` to wrap the JSON as a backtick-quoted string.  String values in the JSON must not contain unescaped backticks if using this option.
+`dir`: Pages (views) directory.
 
-`dir`: Pages directory.
+`type`: Page file extension.  It's recommended to use a different extension for pages and components, so that svelte-view-engine doesn't unnecessarily build non-page components it finds in the pages directory (e.g. .html for pages and .svelte for other components).  Defaults to `"html"`.
 
-`type`: File extension (defaults to `"html"`).  It's recommended to use a different extension for pages and components, so that svelte-view-engine doesn't unnecessarily build non-page components it finds in the pages directory (e.g. .html for pages and .svelte for other components).
+`init`: Find all pages (files of `type` in `dir`) and initialise them on startup.  Defaults to `false`.
 
-`build`: Find all pages (files of `type` in `dir`) and rebuild them on startup.  Defaults to `false`.  This avoids waiting for the build the first time you request each page.
+`buildDir`: Where to output built pages and their CSS and JS files.
 
-`init`: Find all pages (files of `type` in `dir`) and initialise them on startup.  Defaults to `false`.  This is for when the pages are already built (compiled into json files).
+`watch`: Watch component files and dependencies and auto-rebuild.  Defaults to `true` in development.
 
-`buildScript`: Path to build script.
-
-`buildDir`: Where to keep built pages.  This must be unique per project, e.g. `"/tmp/myAppSvelteBuild"` or somewhere within the project directory.  Recommended practice is to keep it with the project, to allow serving pages' CSS and JS files from it.
-
-`buildConcurrency`: The maximum number of pages to build concurrently.  Defaults to the number of processor cores available.
-
-`watch`: Watch component files and dependencies and auto-rebuild.  Defaults to `dev`.
-
-`liveReload`: Auto reload the browser when component rebuilds.  Defaults to `dev`.
-
-`liveReloadPort`: WebSocket port to use for live reload message.  Defaults to a random port between 5000 and 65535 (this will throw an error if the port is in use, so if you're using a process manager it will restart the app until it finds an available port).
-
-`minify`: Passed through to the build script.  Defaults to `!dev`.
-
-`transpile`: Passed through to the build script.  Defaults to `!dev`.
+`liveReload`: Auto reload the browser when component rebuilds.  Defaults to `true` in development.
 
 `excludeLocals`: Array of object keys to exclude from the locals that get passed to the component.  Some keys are added by Express, and may be unnecessary and/or security concerns if exposed.  This defaults to `["_locals", "settings", "cache"]` and is overwritten (not merged) with the supplied setting.
 
-`saveJs`/`saveCss`: Save client-side JS and CSS files respectively in the `buildDir`.  Required for external CSS & JS.  Both default to `true` - turn off for minor build speed-up if not needed.
-
-`assetsPrefix`: Path to prepend to external JS/CSS URLs that are available in the root template as `${jsPath}` and `${cssPath}`.  Should include trailing slash.  Defaults to `""`.
+`assetsPrefix`: Path to prepend to external JS/CSS URLs that are available in the root template as `${jsPath}` and `${cssPath}`.  Should include trailing slash.
 
 `prerender`: Optional function to call before each SSR render.
+
+`payloadFormat`: Format of the `${props}` placeholder value.  Defaults to `"json"`, which inserts a string of JSON directly (must be inserted into a script tag as JSON can contain both single and double quotes).  Set to `"templateString"` to wrap the JSON as a backtick-quoted string.  String values in the JSON must not contain unescaped backticks if using this option.
+
+`svelteDirs`: Optional.  Pass an array of directories that contain Svelte files to mark files NOT within those directories as external for rolling up SSR modules.  If ommitted, no modules will be treated as external.  The purpose of this is to avoid having copies of e.g. utility scripts bundled into every SSR module.

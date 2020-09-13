@@ -10,9 +10,11 @@ let sass = require("./sass");
 let pathStartRe = /([A-Z]:|\/)/;
 
 module.exports = async function(path, name, config, cache) {
+	let buildDirFull = fs(config.buildDir).child(config.env);
 	let prod = config.env === "prod";
 	let dev = !prod;
-	let transpile = prod;
+	let {dynamicImports} = config;
+	let transpile = prod && !dynamicImports;
 	let minify = prod;
 	
 	let inputOptions = {
@@ -52,10 +54,16 @@ module.exports = async function(path, name, config, cache) {
 	
 	let outputOptions = {
 		name,
-		format: transpile ? "cjs" : "iife",
+		format: dynamicImports ? "es" : (transpile ? "cjs" : "iife"),
 	};
 	
 	let bundle = await rollup.rollup(inputOptions);
+	
+	if (dynamicImports) {
+		await bundle.write({
+			dir: fs(path).parent.reparent(config.dir, buildDirFull).path,
+		});
+	}
 	
 	let {output} = await bundle.generate(outputOptions);
 	

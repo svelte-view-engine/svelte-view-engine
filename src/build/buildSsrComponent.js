@@ -70,6 +70,10 @@ module.exports = async function(path, config, cache) {
 	
 	let bundle = await rollup.rollup(inputOptions);
 	
+	//await bundle.write({
+	//	dir: fs(path).parent.path,
+	//});
+	
 	let {output} = await bundle.generate(outputOptions);
 	
 	return {

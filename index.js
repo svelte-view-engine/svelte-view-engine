@@ -9,10 +9,10 @@ module.exports = function(opts={}) {
 		// common
 		
 		env,
+		template: null,
 		dir: null,
 		type: "html",
 		buildDir: null,
-		template: null,
 		watch: dev,
 		liveReload: dev,
 		
@@ -23,6 +23,7 @@ module.exports = function(opts={}) {
 		prerender: null,
 		payloadFormat: "json",
 		svelteDirs: null,
+		dynamicImports: false,
 		
 		// rare
 		
