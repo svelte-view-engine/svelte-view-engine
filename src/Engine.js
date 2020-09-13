@@ -24,12 +24,19 @@ module.exports = class {
 	
 	async init() {
 		if (this.config.liveReload && !isElectron) {
-			this.liveReloadSocket = new ws.Server({
-				port: await getPort(),
+			let port = await getPort();
+			
+			let socket = new ws.Server({
+				port,
 			});
 			
+			this.liveReload = {
+				port,
+				socket,
+			};
+			
 			// remove default EventEmitter limit
-			this.liveReloadSocket.setMaxListeners(0);
+			socket.setMaxListeners(0);
 		}
 		
 		if (this.config.init) {

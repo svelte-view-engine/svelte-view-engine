@@ -16,9 +16,9 @@ module.exports = async function(code, path) {
 	
 	try {
 		module = require(tmpFile.path);
-	} catch (e) {}
-	
-	await tmpFile.delete();
+	} finally {
+		await tmpFile.delete();
+	}
 	
 	return module;
 }

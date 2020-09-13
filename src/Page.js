@@ -33,7 +33,7 @@ module.exports = class {
 			buildDir,
 			scheduler,
 			template,
-			liveReloadSocket,
+			liveReload,
 		} = engine;
 		
 		this.engine = engine;
@@ -44,15 +44,15 @@ module.exports = class {
 		this.config = config;
 		this.scheduler = scheduler;
 		this.template = template;
-		this.liveReloadSocket = liveReloadSocket;
+		this.liveReload = liveReload;
 		
 		this.ready = false;
 		
 		let base = fs(path).reparent(config.dir, buildDir);
 		
 		this.buildFile = base.withExt(".json");
-		this.jsPath = config.assetsPrefix + base.reExt(".js").pathFrom(buildDir);
-		this.cssPath = config.assetsPrefix + base.reExt(".css").pathFrom(buildDir);
+		this.jsPath = config.assetsPrefix + base.reExt(".js").pathFrom(config.buildDir);
+		this.cssPath = config.assetsPrefix + base.reExt(".css").pathFrom(config.buildDir);
 		
 		if (config.env === "dev") { // dev uses client css only, ssr uses server only
 			this.cssPath = "";
@@ -60,8 +60,8 @@ module.exports = class {
 		
 		this.active = false;
 		
-		if (this.liveReloadSocket) {
-			this.liveReloadSocket.on("connection", (ws) => {
+		if (this.liveReload) {
+			this.liveReload.socket.on("connection", (ws) => {
 				ws.setMaxListeners(0);
 				
 				ws.on("message", (path) => {
@@ -191,7 +191,7 @@ module.exports = class {
 					}
 				}
 			} else {
-				for (let client of this.liveReloadSocket.clients) {
+				for (let client of this.liveReload.socket.clients) {
 					client.send(this.path);
 				}
 			}
@@ -278,13 +278,13 @@ module.exports = class {
 			props = "`" + json.replace(/\\/g, "\\\\") + "`";
 		}
 		
-		if (this.liveReloadSocket) {
+		if (this.liveReload) {
 			head += `
 				<script>
 					var socket;
 					
 					function createSocket() {
-						socket = new WebSocket("ws://" + location.hostname + ":${this.config.liveReloadPort}");
+						socket = new WebSocket("ws://" + location.hostname + ":${this.liveReload.port}");
 						
 						socket.addEventListener("message", function(message) {
 							if (message.data === "${this.path}") {
