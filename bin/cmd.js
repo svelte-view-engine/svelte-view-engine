@@ -19,17 +19,26 @@ if (!configFile) {
 
 let config = require(configFile);
 
-let [command, ...args] = yargs.argv._;
+let [command] = yargs.argv._;
+
+yargs.default({
+	env: "prod",
+});
+
+let {
+	env,
+} = yargs.argv;
 
 let commands = {
-	async build(env, ...pages) {
-		if (!env) {
-			env = "prod";
-		}
+	async build() {
+		let {
+			buildName,
+		} = yargs.argv;
 		
 		let engine = svelteViewEngine({
 			...config,
 			env,
+			buildName,
 			init: false,
 		});
 		

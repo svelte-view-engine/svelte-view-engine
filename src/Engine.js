@@ -12,7 +12,7 @@ module.exports = class {
 		this.config = config;
 		this.dir = config.dir;
 		this.type = config.type;
-		this.buildDir = fs(config.buildDir).child(config.env).path;
+		this.buildDir = fs(config.buildDir).child(config.buildName).path;
 		
 		this.template = new Template(config);
 		
