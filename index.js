@@ -3,7 +3,7 @@ let fs = require("flowfs");
 let Engine = require("./src/Engine");
 
 module.exports = function(opts={}) {
-	let env = opts.env || (process.env.NODE_ENV === "production" ? "prod" : "dev");
+	let env = opts.env || (process.env.NODE_ENV === "development" ? "dev" : "prod");
 	let dev = env === "dev";
 	
 	let options = {
