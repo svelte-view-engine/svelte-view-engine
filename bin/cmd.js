@@ -41,7 +41,6 @@ let commands = {
 			buildName,
 			init: false,
 			watch: false,
-			liveReload: false,
 		});
 		
 		let [, ...pages] = yargs.argv._;
