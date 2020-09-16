@@ -60,4 +60,4 @@ if (!commands[command]) {
 	error("Unrecognised command " + command + " (available commands: " + Object.keys(commands).join(", ") + ")");
 }
 
-commands[command](...args);
+commands[command]();
