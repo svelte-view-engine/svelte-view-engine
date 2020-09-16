@@ -42,6 +42,8 @@ let commands = {
 			init: false,
 		});
 		
+		let [, ...pages] = yargs.argv._;
+		
 		pages = pages.map(p => fs(config.dir).child(p).withExt("." + config.type).path);
 		
 		if (pages.length > 0) {
