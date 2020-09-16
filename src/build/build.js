@@ -34,7 +34,7 @@ let buildDom = require("./buildDomComponent");
 			client,
 		});
 		
-		let buildDir = fs(config.buildDir).child(config.env);
+		let buildDir = fs(config.buildDir).child(config.buildName);
 		let base = fs(path).reparent(config.dir, buildDir);
 		
 		await Promise.all([
