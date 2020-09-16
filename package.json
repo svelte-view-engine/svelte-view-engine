@@ -1,6 +1,6 @@
 {
 	"name": "svelte-view-engine",
-	"version": "14.2.4",
+	"version": "14.2.5",
 	"repository": "https://github.com/svelte-view-engine/svelte-view-engine",
 	"dependencies": {
 		"@babel/core": "^7.10.4",

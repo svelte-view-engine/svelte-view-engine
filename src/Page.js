@@ -157,24 +157,24 @@ module.exports = class {
 					useCache,
 				});
 			});
-		}
-		
-		if (this.config.liveReload) {
-			if (isElectron) {
-				let {BrowserWindow} = require("electron");
-				
-				for (let win of BrowserWindow.getAllWindows()) {
-					let winUrl = win.getURL();
+			
+			if (this.config.liveReload) {
+				if (isElectron) {
+					let {BrowserWindow} = require("electron");
 					
-					if (winUrl) {
-						if (url.parse(winUrl).pathname === this.path) {
-							win.webContents.reloadIgnoringCache();
+					for (let win of BrowserWindow.getAllWindows()) {
+						let winUrl = win.getURL();
+						
+						if (winUrl) {
+							if (url.parse(winUrl).pathname === this.path) {
+								win.webContents.reloadIgnoringCache();
+							}
 						}
 					}
-				}
-			} else {
-				for (let client of this.liveReload.socket.clients) {
-					client.send(this.path);
+				} else {
+					for (let client of this.liveReload.socket.clients) {
+						client.send(this.path);
+					}
 				}
 			}
 		}

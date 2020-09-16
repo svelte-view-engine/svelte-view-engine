@@ -23,7 +23,7 @@ module.exports = class {
 	}
 	
 	async init() {
-		if (this.config.liveReload && !isElectron) {
+		if (this.config.watch && this.config.liveReload && !isElectron) {
 			let port = await getPort();
 			
 			let socket = new ws.Server({
