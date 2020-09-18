@@ -30,15 +30,20 @@ module.exports = class {
 	constructor(engine, path) {
 		let {
 			config,
-			buildDir,
 			scheduler,
 			template,
 			liveReload,
 		} = engine;
 		
+		let {
+			dir,
+			buildDir,
+			assetsPrefix,
+		} = config;
+		
 		this.engine = engine;
 		this.path = path;
-		this.relativePath = fs(path).pathFrom(config.dir);
+		this.relativePath = fs(path).pathFrom(dir);
 		this.name = validIdentifier(fs(path).basename);
 		
 		this.config = config;
@@ -48,11 +53,11 @@ module.exports = class {
 		
 		this.ready = false;
 		
-		let base = fs(path).reparent(config.dir, buildDir);
+		let base = fs(path).reparent(dir, buildDir);
 		
 		this.buildFile = base.withExt(".json");
-		this.jsPath = config.assetsPrefix + base.reExt(".js").pathFrom(config.buildDir);
-		this.cssPath = config.assetsPrefix + base.reExt(".css").pathFrom(config.buildDir);
+		this.jsPath = assetsPrefix + base.reExt(".js").pathFrom(buildDir);
+		this.cssPath = assetsPrefix + base.reExt(".css").pathFrom(buildDir);
 		
 		if (config.env === "dev") { // dev uses client css only, ssr uses server only
 			this.cssPath = "";
@@ -86,10 +91,6 @@ module.exports = class {
 			buildScript,
 		} = config;
 		
-		let {
-			buildDir,
-		} = this.engine;
-		
 		let json = JSON.stringify({
 			name,
 			path,
@@ -109,8 +110,14 @@ module.exports = class {
 			...config,
 		};
 		
+		let buildTimer = "Build " + this.relativePath;
+		
+		console.time(buildTimer);
+		
 		await this.runBuildScript(useCache);
 		await this.init();
+		
+		console.timeEnd(buildTimer);
 	}
 	
 	async init(priority=false) {

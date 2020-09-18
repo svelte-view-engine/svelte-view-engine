@@ -32,7 +32,6 @@ module.exports = function(opts={}) {
 		verbose: dev,
 		renderBeforeInit: dev,
 		buildScript: fs(__dirname).child("src/build/build.js").path,
-		buildName: env,
 		
 		excludeLocals: [
 			"_locals",

@@ -34,8 +34,7 @@ let buildDom = require("./buildDomComponent");
 			client,
 		});
 		
-		let buildDir = fs(config.buildDir).child(config.buildName);
-		let base = fs(path).reparent(config.dir, buildDir);
+		let base = fs(path).reparent(config.dir, config.buildDir);
 		
 		await Promise.all([
 			base.reExt(".js").write(client.js.code),

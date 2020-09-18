@@ -23,6 +23,7 @@ let [command] = yargs.argv._;
 
 yargs.default({
 	env: "prod",
+	buildDir: config.buildDir,
 });
 
 let {
@@ -32,13 +33,13 @@ let {
 let commands = {
 	async build() {
 		let {
-			buildName,
+			buildDir,
 		} = yargs.argv;
 		
 		let engine = svelteViewEngine({
 			...config,
 			env,
-			buildName,
+			buildDir,
 			init: false,
 			watch: false,
 		});
