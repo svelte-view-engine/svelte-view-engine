@@ -21,7 +21,7 @@ let buildDom = require("./buildDomComponent");
 		
 		let code = {
 			client: client.js.code,
-			server: server.component.code,
+			server: server.component,
 			css: server.css.code,
 		};
 		
