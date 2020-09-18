@@ -6,7 +6,10 @@ svelte-view-engine is an Express-compatible [view engine](https://expressjs.com/
 14.x release note
 -----------------
 
-Version 14 includes a Svelte build script to simplify the interface and avoid having large build scripts in your app.  The build uses rollup and transpiles to ES5 in production.  You can still supply a custom build script via the `buildScript` option.
+Version 14 includes a Svelte build script to simplify the interface and avoid having large build scripts in your app.  The build uses rollup, and transpiles to ES5 in production.  You can still supply a custom build script via the `buildScript` option.
+
+Intro
+-----
 
 Example app: [https://github.com/svelte-view-engine/sve-app](https://github.com/svelte-view-engine/sve-app).
 
@@ -85,6 +88,8 @@ Placeholders:
 - `css` - the CSS.
 - `cssPath` - the path to the external CSS file.
 - `jsPath` - the path to the external JS file.
+- `jsHash` - MD5 hash of the external JS file.
+- `cssHash` - MD5 hash of the external CSS file.
 - `name` - the basename of the .html file, used as the clientside component class name (sanitised to make it a valid identifier).
 - `props` - a JSON payload of the object you pass to `res.render()`.  See the `payloadFormat` option for formatting options.
 - `include /path/to/file` - replaced with the contents of the file.
@@ -197,9 +202,7 @@ Pass a function to the `prerender` option to do the work.  The function will rec
 Building pages for production
 =============================
 
-If you look in the `dir` directory, you'll notice the files are all stored under a directory named after the env used when building them.  If you haven't built pages for production yet, this will just contain `dev`.
-
-To build pages for production, create a file called `svelte-view-engine.js` and export your config from it (the same object you pass to `svelteViewEngine` when instantiating it to pass to Express):
+To build pages for production, create a file called `svelte-view-engine.js` and export your config from it (the same object you pass to `svelteViewEngine` when instantiating it in the app):
 
 ```
 module.exports = {
@@ -211,9 +214,9 @@ module.exports = {
 };
 ```
 
-Then run `$ npx svelte-view-engine build prod`.
+Then run `$ npx svelte-view-engine build --env prod [--build-dir /tmp/svelte-pages]`.
 
-This will create a directory called `prod` under `dir` (if it doesn't exist already), and output prod page files to it.
+The optional `--build-dir` argument overrides the `buildDir` option, which allows you to keep the prod build separate instead of overwriting the dev build.  How you then deploy the prod files to production is up to you, e.g. `$ scp -r /tmp/svelte-pages example.com:app/artifacts/pages`, baking them into a Docker image, etc.
 
 Options
 =======
