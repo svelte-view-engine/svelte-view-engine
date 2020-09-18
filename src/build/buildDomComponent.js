@@ -9,7 +9,7 @@ let sass = require("./sass");
 
 let pathStartRe = /([A-Z]:|\/)/;
 
-module.exports = async function(path, name, config, cache) {
+module.exports = async function(path, name, config) {
 	let buildDirFull = fs(config.buildDir).child(config.env);
 	let prod = config.env === "prod";
 	let dev = !prod;
@@ -19,7 +19,6 @@ module.exports = async function(path, name, config, cache) {
 	
 	let inputOptions = {
 		input: path,
-		cache,
 		
 		plugins: [
 			svelte({
@@ -78,7 +77,6 @@ module.exports = async function(path, name, config, cache) {
 	}
 	
 	return {
-		cache: dev && bundle.cache,
 		js,
 		
 		watchFiles: bundle.watchFiles.map(function(path) {

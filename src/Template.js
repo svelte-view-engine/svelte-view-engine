@@ -4,15 +4,12 @@ let fs = require("flowfs");
 /*
 this is the root template that's used to render all pages.
 
-it uses a simple template language where ${...} placeholder values result in the
-named function from the supplied map of render functions being called, and
-everything else (not inside ${}) results in the .raw function being called with
-the substring.  the Template doesn't actually render anything itself, it just
-calls the functions.
+it uses a simple template language where ${...} placeholders are replaced with
+corresponding values from the supplied object.
 
-You can also ${include files/relative/to/the/template}.  These include directives
-are processed, with the file contents being inserted in place of the directive,
-prior to any rendering.
+You can also ${include files/relative/to/the/template}.  Include directives
+are processed prior to any rendering, and will not be updated if the underlying
+files change.
 */
 
 module.exports = class {

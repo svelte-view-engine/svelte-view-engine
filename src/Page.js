@@ -9,14 +9,6 @@ let isElectron = require("./utils/isElectron");
 let payload = require("./payload");
 
 /*
-saving a .scss file that gets @imported into the .svelte <style>
-triggers a rebuild, but for some reason doesn't use the new css
-if using cached bundles
-*/
-
-let noCacheDependencyTypes = ["sass", "scss"];
-
-/*
 in dev, we want to know which pages we're currently looking at so we can
 schedule them for priority rebuilding when a common dependency is changed
 
@@ -60,7 +52,7 @@ module.exports = class {
 		this.cssPath = assetsPrefix + base.reExt(".css").pathFrom(buildDir);
 		
 		if (config.env === "dev") { // dev uses client css only, ssr uses server only
-			this.cssPath = "";
+			this.cssPath = "/no-ssr-css-in-dev";
 		}
 		
 		this.active = false;
@@ -78,7 +70,7 @@ module.exports = class {
 		}
 	}
 	
-	async runBuildScript(useCache) {
+	async runBuildScript() {
 		let {
 			name,
 			path,
@@ -95,26 +87,18 @@ module.exports = class {
 			name,
 			path,
 			buildPath: buildFile.path,
-			useCache,
 			config,
 		});
 		
 		await cmd(`node ${buildScript} '${json}'`, json);
 	}
 	
-	async build(config) {
-		let {
-			useCache,
-		} = {
-			useCache: false,
-			...config,
-		};
-		
+	async build() {
 		let buildTimer = "Build " + this.relativePath;
 		
 		console.time(buildTimer);
 		
-		await this.runBuildScript(useCache);
+		await this.runBuildScript();
 		await this.init();
 		
 		console.timeEnd(buildTimer);
@@ -129,10 +113,12 @@ module.exports = class {
 			let {
 				client,
 				server,
+				hashes,
 			} = await this.buildFile.readJson();
 			
 			this.serverComponent = server;
 			this.clientComponent = client;
+			this.hashes = hashes || {};
 			
 			if (this.serverComponent) {
 				this.ssrModule = await instantiateSsrModule(this.serverComponent.component, this.path);
@@ -151,8 +137,6 @@ module.exports = class {
 			this.watcher = chokidar.watch(this.clientComponent.watchFiles);
 			
 			this.watcher.on("change", async (path) => {
-				let useCache = !noCacheDependencyTypes.includes(fs(path).type);
-				
 				this.ready = false;
 				
 				if (!isElectron && !this.active) {
@@ -160,9 +144,7 @@ module.exports = class {
 					await sleep(100);
 				}
 				
-				this.scheduler.scheduleBuild(this, this.active, {
-					useCache,
-				});
+				this.scheduler.scheduleBuild(this, this.active);
 			});
 			
 			if (this.config.liveReload) {
@@ -313,6 +295,8 @@ module.exports = class {
 				js: js.code,
 				jsPath,
 				cssPath,
+				jsHash: this.hashes.js,
+				cssHash: this.hashes.css,
 				name,
 				props,
 			});

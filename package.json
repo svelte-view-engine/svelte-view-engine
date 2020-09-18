@@ -1,6 +1,6 @@
 {
 	"name": "svelte-view-engine",
-	"version": "14.3.0",
+	"version": "14.4.0",
 	"repository": "https://github.com/svelte-view-engine/svelte-view-engine",
 	"dependencies": {
 		"@babel/core": "^7.10.4",
@@ -10,6 +10,7 @@
 		"chokidar": "^3.0.2",
 		"flowfs": "^4.0.0",
 		"get-port": "^5.1.1",
+		"md5": "^2.3.0",
 		"node-sass": "^4.14.1",
 		"rollup": "^1.32.1",
 		"rollup-plugin-commonjs": "^10.1.0",

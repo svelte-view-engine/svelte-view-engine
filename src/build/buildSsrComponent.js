@@ -5,7 +5,7 @@ let resolve = require("rollup-plugin-node-resolve");
 let commonjs = require("rollup-plugin-commonjs");
 let sass = require("./sass");
 
-module.exports = async function(path, config, cache) {
+module.exports = async function(path, config) {
 	let dev = config.env === "dev";
 	let css;
 	
@@ -30,8 +30,6 @@ module.exports = async function(path, config, cache) {
 				return file.path !== dir.path && !file.within(dir);
 			});
 		},
-		
-		cache,
 		
 		plugins: [
 			svelte({
@@ -72,13 +70,7 @@ module.exports = async function(path, config, cache) {
 	
 	let {output} = await bundle.generate(outputOptions);
 	
-	//await bundle.write({
-	//	format: "cjs",
-	//	dir: fs(path).parent.path,
-	//});
-	
 	return {
-		cache: dev && bundle.cache,
 		component: output[0].code,
 		css,
 	};
