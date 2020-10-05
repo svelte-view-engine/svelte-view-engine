@@ -28,7 +28,7 @@ module.exports = async function(path, name, config) {
 					style: sass,
 				},
 				
-				css: dev,
+				css: false,
 				
 				onwarn() {},
 				

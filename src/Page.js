@@ -51,10 +51,6 @@ module.exports = class {
 		this.jsPath = assetsPrefix + base.reExt(".js").pathFrom(buildDir);
 		this.cssPath = assetsPrefix + base.reExt(".css").pathFrom(buildDir);
 		
-		if (config.env === "dev") { // dev uses client css only, ssr uses server only
-			this.cssPath = "/no-ssr-css-in-dev";
-		}
-		
 		this.active = false;
 		
 		if (this.liveReload) {
