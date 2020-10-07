@@ -42,6 +42,7 @@ let commands = {
 			buildDir,
 			init: false,
 			watch: false,
+			verbose: true,
 		});
 		
 		let [, ...pages] = yargs.argv._;
