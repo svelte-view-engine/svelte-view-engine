@@ -1,3 +1,4 @@
+let osPath = require("path");
 let ws = require("ws");
 let fs = require("flowfs");
 let bluebird = require("bluebird");
@@ -117,8 +118,8 @@ module.exports = class {
 			await this.template._init();
 		}
 		
-		if (path[0] !== "/") {
-			path = this.dir + "/" + path + "." + this.type;
+		if (!osPath.isAbsolute(path)) {
+			path = osPath.join(this.dir, path + "." + this.type);
 		}
 		
 		let sendLocals = {};

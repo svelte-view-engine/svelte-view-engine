@@ -18,12 +18,11 @@ module.exports = async function(path, config) {
 			}
 			
 			let file;
-			let root = fs(__dirname).rel("../..");
 			
 			if (id.match(/^\./)) {
 				file = fs(parentId).sibling(id);
 			} else {
-				file = root.child("node_modules").child(id);
+				file = fs(config.root).child("node_modules").child(id);
 			}
 			
 			return config.svelteDirs.every(function(dir) {
