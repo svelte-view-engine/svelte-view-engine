@@ -48,9 +48,8 @@ module.exports = class {
 		let base = fs(path).reparent(dir, buildDir);
 		
 		this.buildFile = base.withExt(".json");
-		this.assetsPrefix = assetsPrefix + base.parent.pathFrom(buildDir);
-		this.jsPath = this.assetsPrefix + "/" + base.reExt(".js").name;
-		this.cssPath = this.assetsPrefix + "/" + base.reExt(".css").name;
+		this.jsPath = assetsPrefix + base.reExt(".js").pathFrom(buildDir);
+		this.cssPath = assetsPrefix + base.reExt(".css").pathFrom(buildDir);
 		
 		this.active = false;
 		
@@ -190,10 +189,6 @@ module.exports = class {
 			await this.init(true);
 		}
 		
-		let {
-			assetsPrefix,
-		} = this;
-		
 		let _head = false; // HACK https://github.com/sveltejs/svelte/issues/4982
 		
 		locals = {
@@ -206,8 +201,6 @@ module.exports = class {
 				
 				return true;
 			},
-			
-			assetsPrefix,
 			
 			...locals,
 		};
