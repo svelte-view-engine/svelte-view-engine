@@ -255,7 +255,8 @@ module.exports = class {
 		if (this.liveReload) {
 			head += `
 				<script>
-					var socket;
+					let socket;
+					let errors = 0;
 					
 					function createSocket() {
 						socket = new WebSocket("ws://" + location.hostname + ":${this.liveReload.port}");
@@ -272,7 +273,19 @@ module.exports = class {
 					}
 					
 					function heartbeat() {
-						socket.send("${this.path}");
+						try {
+							socket.send("${this.path}");
+						} catch (e) {
+							errors++;
+							
+							/*
+							only throw the third error to avoid spamming on connection failure
+							*/
+							
+							if (errors === 3) {
+								throw e;
+							}
+						}
 					}
 					
 					createSocket();
