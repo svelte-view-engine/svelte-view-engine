@@ -249,10 +249,32 @@ module.exports = class {
 			head += `
 				<script>
 					let socket;
-					let errors = 0;
+					let sendErrors = 0;
+					
+					let storageKeys = {
+						retries: "svelte-view-engine.websocketRetries",
+					};
+					
+					function retry() {
+						let retries = Number(sessionStorage.getItem(storageKeys.retries) || "0");
+						
+						if (retries > 2) {
+							sessionStorage.setItem(storageKeys.retries, 0);
+							
+							console.error("svelte-view-engine live-reload: unable to establish WebSocket connection");
+						} else {
+							sessionStorage.setItem(storageKeys.retries, retries + 1);
+							
+							location.reload();
+						}
+					}
 					
 					function createSocket() {
 						socket = new WebSocket("ws://" + location.hostname + ":${this.liveReload.port}");
+						
+						socket.addEventListener("open", function() {
+							sessionStorage.setItem(storageKeys.retries, 0);
+						});
 						
 						socket.addEventListener("message", function(message) {
 							if (message.data === "${this.path}") {
@@ -260,23 +282,18 @@ module.exports = class {
 							}
 						});
 						
-						socket.addEventListener("close", function() {
-							setTimeout(createSocket, 500);
-						});
+						socket.addEventListener("error", retry);
+						socket.addEventListener("close", retry);
 					}
 					
 					function heartbeat() {
 						try {
 							socket.send("${this.path}");
 						} catch (e) {
-							errors++;
+							sendErrors++;
 							
-							/*
-							only throw the third error to avoid spamming on connection failure
-							*/
-							
-							if (errors === 3) {
-								throw e;
+							if (sendErrors >= 3) {
+								retry();
 							}
 						}
 					}
