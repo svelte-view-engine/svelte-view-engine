@@ -229,7 +229,16 @@ module.exports = class {
 		if (this.serverComponent) {
 			let module = this.ssrModule["default"] || this.ssrModule;
 			
-			({head, html} = module.render(locals));
+			try {
+				({head, html} = module.render(locals));
+			} catch (e) {
+				if (this.config.env === "dev") {
+					this.ready = false;
+					this.buildFile.delete();
+				}
+				
+				throw e;
+			}
 			
 			if (this.config.env !== "dev") {
 				({css} = this.serverComponent);

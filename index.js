@@ -2,11 +2,11 @@ let os = require("os");
 let fs = require("flowfs");
 let Engine = require("./src/Engine");
 
-module.exports = function(opts={}) {
-	let env = opts.env || (process.env.NODE_ENV === "development" ? "dev" : "prod");
+module.exports = function(config={}) {
+	let env = config.env || (process.env.NODE_ENV === "development" ? "dev" : "prod");
 	let dev = env === "dev";
 	
-	let options = {
+	return new Engine({
 		// common
 		
 		env,
@@ -40,8 +40,6 @@ module.exports = function(opts={}) {
 			"cache",
 		],
 		
-		...opts,
-	};
-	
-	return new Engine(options);
+		...config,
+	});
 }
