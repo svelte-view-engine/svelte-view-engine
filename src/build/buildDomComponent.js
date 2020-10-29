@@ -10,7 +10,6 @@ let sass = require("./sass");
 let pathStartRe = /([A-Z]:|\/)/;
 
 module.exports = async function(path, name, config) {
-	let buildDirFull = fs(config.buildDir).child(config.env);
 	let prod = config.env === "prod";
 	let dev = !prod;
 	let {dynamicImports} = config;
@@ -62,7 +61,7 @@ module.exports = async function(path, name, config) {
 	
 	if (dynamicImports) {
 		await bundle.write({
-			dir: fs(path).parent.reparent(config.dir, buildDirFull).path,
+			dir: fs(path).parent.reparent(config.dir, config.buildDir).path,
 		});
 	}
 	
