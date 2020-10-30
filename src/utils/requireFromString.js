@@ -2,11 +2,9 @@ let cluster = require("cluster");
 let fs = require("flowfs");
 
 module.exports = async function(code, path) {
-	let tmpFile = fs(path);
-	
-	if (cluster.isWorker) {
-		tmpFile = tmpFile.sibling(cluster.worker.id + "." + tmpFile.name);
-	}
+	let prefix = "requireFromString-" + (cluster.isWorker ? cluster.worker.id + "-" : "");
+	let file = fs(path);
+	let tmpFile = file.sibling(prefix + file.name);
 	
 	await tmpFile.write(code);
 	
