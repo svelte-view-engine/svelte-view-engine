@@ -16,6 +16,8 @@ module.exports = function(config={}) {
 		buildDir: null,
 		watch: dev,
 		liveReload: dev,
+		ssr: true,
+		dom: true,
 		
 		// occasional
 		

@@ -225,8 +225,9 @@ module.exports = class {
 		let head = "";
 		let html = "";
 		let css = "";
+		let js = "";
 		
-		if (this.serverComponent) {
+		if (this.config.ssr) {
 			let module = this.ssrModule["default"] || this.ssrModule;
 			
 			try {
@@ -239,13 +240,15 @@ module.exports = class {
 				
 				throw e;
 			}
-			
-			if (this.config.env !== "dev") {
-				({css} = this.serverComponent);
-			}
 		}
 		
-		let {js} = this.clientComponent;
+		if (this.serverComponent && this.config.env !== "dev") {
+			({css} = this.serverComponent);
+		}
+		
+		if (this.clientComponent) {
+			({js} = this.clientComponent);
+		}
 		
 		let json = JSON.stringify(locals);
 		let props = json;

@@ -16,17 +16,21 @@ let buildDom = require("./buildDomComponent");
 		
 		let buildFile = fs(buildPath);
 		
+		let client;
 		let server = await buildSsr(path, config);
-		let client = await buildDom(path, name, config);
+		
+		if (config.dom) {
+			client = await buildDom(path, name, config);
+		}
 		
 		let code = {
-			client: client.js.code,
-			server: server.component,
+			client: client && client.js.code,
+			server: config.ssr && server.component,
 			css: server.css.code,
 		};
 		
 		let hashes = {
-			js: md5(code.client),
+			js: client && md5(code.client),
 			css: md5(code.css),
 		};
 		
@@ -41,9 +45,9 @@ let buildDom = require("./buildDomComponent");
 		let base = fs(path).reparent(config.dir, config.buildDir);
 		
 		await Promise.all([
-			base.reExt(".js").write(code.client),
+			client && base.reExt(".js").write(code.client),
 			base.reExt(".css").write(code.css),
-			base.reExt(".server.js").write(code.server),
+			config.ssr && base.reExt(".server.js").write(code.server),
 		]);
 	} catch (e) {
 		console.error(e);
