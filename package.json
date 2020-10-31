@@ -1,6 +1,6 @@
 {
 	"name": "svelte-view-engine",
-	"version": "14.8.1",
+	"version": "14.8.2",
 	"repository": "https://github.com/svelte-view-engine/svelte-view-engine",
 	"dependencies": {
 		"@babel/core": "^7.10.4",
@@ -8,6 +8,7 @@
 		"@babel/runtime": "^7.10.4",
 		"bluebird": "^3.7.2",
 		"chokidar": "^3.0.2",
+		"core-js": "^3.6.5",
 		"flowfs": "^4.0.0",
 		"get-port": "^5.1.1",
 		"md5": "^2.3.0",
