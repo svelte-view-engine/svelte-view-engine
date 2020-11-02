@@ -3,6 +3,7 @@ let rollup = require("rollup");
 let svelte = require("rollup-plugin-svelte");
 let resolve = require("rollup-plugin-node-resolve");
 let commonjs = require("rollup-plugin-commonjs");
+let json = require("@rollup/plugin-json");
 let sass = require("./sass");
 
 module.exports = async function(path, config) {
@@ -52,6 +53,8 @@ module.exports = async function(path, config) {
 			}),
 			
 			commonjs(),
+			
+			json(),
 		],
 		
 		onwarn(warning, next) {

@@ -2,6 +2,7 @@ let babel = require("@babel/core");
 let rollup = require("rollup");
 let resolve = require("rollup-plugin-node-resolve");
 let commonjs = require("rollup-plugin-commonjs");
+let json = require("@rollup/plugin-json");
 let fs = require("flowfs");
 
 module.exports = async function(path, name, code) {
@@ -31,6 +32,8 @@ module.exports = async function(path, name, code) {
 			}),
 			
 			commonjs(),
+			
+			json(),
 		],
 	});
 	
