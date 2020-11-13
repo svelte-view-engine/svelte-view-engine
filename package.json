@@ -18,7 +18,6 @@
 		"rollup-plugin-commonjs": "^10.1.0",
 		"rollup-plugin-node-resolve": "^5.2.0",
 		"rollup-plugin-svelte": "^5.2.3",
-		"svelte": "^3.29.4",
 		"terser": "^4.8.0",
 		"url": "^0.11.0",
 		"ws": "^7.0.1",
@@ -28,7 +27,8 @@
 		"svelte": "3.x"
 	},
 	"devDependencies": {
-		"mocha": "^7.1.0"
+		"mocha": "^7.1.0",
+		"svelte": "^3.29.7"
 	},
 	"scripts": {
 		"test": "./node_modules/mocha/bin/mocha test/tests/**/*.test.js"
