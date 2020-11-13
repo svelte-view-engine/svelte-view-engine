@@ -91,12 +91,7 @@ module.exports = class {
 	
 	build() {
 		let {promise, child: buildProcess} = this.runBuildScript();
-		
-		let complete = promise.then(() => {
-			this.init();
-		}, function(e) {
-			console.log(e);
-		});
+		let complete = promise.then(() => this.init());
 		
 		return {
 			promise,
