@@ -1,27 +1,31 @@
-let {exec} = require("child_process");
+let {spawn} = require("child_process");
+let {default: parseCommand} = require("string-argv");
+let Promise = require("./Promise");
 
 module.exports = function(cmd, stdin=null) {
-	return new Promise(function(resolve, reject) {
-		let child = exec(cmd.replace(/\n/g, " "), function(error, stdout, stderr) {
-			if (stdout) {
-				console.log(stdout);
-			}
-			
-			if (stderr) {
-				console.error(stderr);
-			}
-			
-			if (error) {
-				reject(error);
-			} else {
-				resolve();
-			}
-		});
-		
-		if (stdin) {
-			child.stdin.write(stdin);
-		}
-		
-		child.stdin.end();
+	let promise = Promise();
+	let [command, ...args] = parseCommand(cmd.replace(/\n/g, " "));
+	
+	let child = spawn(command, args, {
+		stdio: ["pipe", "inherit", "inherit"],
 	});
+	
+	if (stdin) {
+		child.stdin.write(stdin);
+	}
+	
+	child.stdin.end();
+	
+	child.on("exit", function(code) {
+		if (code === 0) {
+			promise.resolve();
+		} else {
+			promise.reject(code);
+		}
+	});
+	
+	return {
+		child,
+		promise,
+	};
 }

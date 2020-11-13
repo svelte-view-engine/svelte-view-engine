@@ -66,7 +66,7 @@ module.exports = class {
 		}
 	}
 	
-	async runBuildScript() {
+	runBuildScript() {
 		let {
 			name,
 			path,
@@ -86,23 +86,28 @@ module.exports = class {
 			config,
 		});
 		
-		await cmd(`node ${buildScript} '${json}'`, json);
+		return cmd(`node ${buildScript} '${json}'`, json);
 	}
 	
-	async build() {
-		let buildTimer = "Build " + this.relativePath;
+	build() {
+		let {promise, child: buildProcess} = this.runBuildScript();
 		
-		console.time(buildTimer);
+		let complete = promise.then(() => {
+			this.init();
+		}, function(e) {
+			console.log(e);
+		});
 		
-		await this.runBuildScript();
-		await this.init();
-		
-		console.timeEnd(buildTimer);
+		return {
+			promise,
+			buildProcess,
+			complete,
+		};
 	}
 	
 	async init(priority=false) {
 		if (!await this.buildFile.exists()) {
-			return this.scheduler.build(this, priority);
+			return this.scheduler.scheduleBuild(this, priority);
 		}
 		
 		try {
@@ -132,15 +137,16 @@ module.exports = class {
 			
 			this.watcher = chokidar.watch(this.clientComponent.watchFiles);
 			
-			this.watcher.on("change", async (path) => {
+			this.watcher.on("change", async () => {
 				this.ready = false;
 				
-				if (!isElectron && !this.active) {
-					// give active pages a chance to get scheduled first
+				if (this.active) {
+					this.scheduler.build(this);
+				} else {
 					await sleep(100);
+					
+					this.scheduler.scheduleBuild(this);
 				}
-				
-				this.scheduler.scheduleBuild(this, this.active);
 			});
 			
 			if (this.config.liveReload) {
@@ -182,7 +188,7 @@ module.exports = class {
 	
 	async render(locals, forEmail=false) {
 		if (locals._rebuild) {
-			await this.build();
+			await this.scheduler.build(this).complete;
 		}
 		
 		if (!this.ready) {
