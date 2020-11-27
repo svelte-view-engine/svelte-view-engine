@@ -5,8 +5,8 @@ let resolve = require("rollup-plugin-node-resolve");
 let commonjs = require("rollup-plugin-commonjs");
 let json = require("@rollup/plugin-json");
 let terser = require("terser");
-let babel = require("./babel");
 let sass = require("./sass");
+let babel = require("./babel");
 
 let pathStartRe = /([A-Z]:|\/)/;
 
@@ -22,17 +22,20 @@ module.exports = async function(path, name, config) {
 		
 		plugins: [
 			svelte({
-				hydratable: true,
+				extensions: [".svelte", ".html"],
 				
 				preprocess: {
 					style: sass,
 				},
 				
-				css: false,
+				emitCss: false,
 				
 				onwarn() {},
 				
-				dev,
+				compilerOptions: {
+					hydratable: true,
+					dev,
+				},
 			}),
 	
 			resolve({

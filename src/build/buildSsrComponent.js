@@ -3,6 +3,7 @@ let rollup = require("rollup");
 let svelte = require("rollup-plugin-svelte");
 let resolve = require("rollup-plugin-node-resolve");
 let commonjs = require("rollup-plugin-commonjs");
+let cssOnly = require("rollup-plugin-css-only");
 let json = require("@rollup/plugin-json");
 let sass = require("./sass");
 
@@ -33,19 +34,19 @@ module.exports = async function(path, config) {
 		
 		plugins: [
 			svelte({
-				generate: "ssr",
+				extensions: [".svelte", ".html"],
 				
+				onwarn() {},
+			
 				preprocess: {
 					style: sass,
 				},
 				
-				css(c) {
-					css = c;
+				compilerOptions: {
+					hydratable: true,
+					dev,
+					generate: "ssr",
 				},
-				
-				onwarn() {},
-			
-				dev,
 			}),
 	
 			resolve({
@@ -55,6 +56,12 @@ module.exports = async function(path, config) {
 			commonjs(),
 			
 			json(),
+			
+			cssOnly({
+				output(c) {
+					css = c;
+				},
+			}),
 		],
 		
 		onwarn(warning, next) {

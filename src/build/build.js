@@ -26,7 +26,7 @@ let buildDom = require("./buildDomComponent");
 		let code = {
 			client: client && client.js.code,
 			server: config.ssr && server.component,
-			css: server.css.code,
+			css: server.css,
 		};
 		
 		let hashes = {
