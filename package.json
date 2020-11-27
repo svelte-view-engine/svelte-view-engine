@@ -1,6 +1,6 @@
 {
 	"name": "svelte-view-engine",
-	"version": "14.11.0",
+	"version": "14.11.1",
 	"repository": "https://github.com/svelte-view-engine/svelte-view-engine",
 	"dependencies": {
 		"@babel/core": "^7.10.4",
@@ -17,7 +17,7 @@
 		"rollup": "^1.32.1",
 		"rollup-plugin-commonjs": "^10.1.0",
 		"rollup-plugin-node-resolve": "^5.2.0",
-		"rollup-plugin-svelte": "^5.2.3",
+		"rollup-plugin-svelte": "^7.0.0",
 		"string-argv": "^0.3.1",
 		"terser": "^4.8.0",
 		"url": "^0.11.0",
@@ -29,7 +29,7 @@
 	},
 	"devDependencies": {
 		"mocha": "^7.1.0",
-		"svelte": "^3.29.7"
+		"svelte": "^3.30.0"
 	},
 	"scripts": {
 		"test": "./node_modules/mocha/bin/mocha test/tests/**/*.test.js"
