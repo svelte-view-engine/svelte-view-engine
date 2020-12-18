@@ -31,7 +31,7 @@ let buildDom = require("./buildDomComponent");
 		
 		let hashes = {
 			js: client && md5(code.client),
-			css: md5(code.css),
+			css: code.css && md5(code.css),
 		};
 		
 		await buildFile.parent.mkdirp();
