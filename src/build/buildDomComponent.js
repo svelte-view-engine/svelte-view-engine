@@ -3,6 +3,7 @@ let rollup = require("rollup");
 let svelte = require("rollup-plugin-svelte");
 let resolve = require("rollup-plugin-node-resolve");
 let commonjs = require("rollup-plugin-commonjs");
+let cssOnly = require("rollup-plugin-css-only");
 let json = require("@rollup/plugin-json");
 let terser = require("terser");
 let sass = require("./sass");
@@ -28,8 +29,6 @@ module.exports = async function(path, name, config) {
 					style: sass,
 				},
 				
-				emitCss: false,
-				
 				onwarn() {},
 				
 				compilerOptions: {
@@ -45,6 +44,12 @@ module.exports = async function(path, name, config) {
 			commonjs(),
 			
 			json(),
+			
+			cssOnly({
+				output(c) {
+					// do nothing - CSS is provided by the SSR component
+				},
+			}),
 		],
 	};
 	
