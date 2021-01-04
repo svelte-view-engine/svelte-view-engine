@@ -46,7 +46,7 @@ let buildDom = require("./buildDomComponent");
 		
 		await Promise.all([
 			client && base.reExt(".js").write(code.client),
-			base.reExt(".css").write(code.css),
+			code.css && base.reExt(".css").write(code.css),
 			config.ssr && base.reExt(".server.js").write(code.server),
 		]);
 	} catch (e) {
