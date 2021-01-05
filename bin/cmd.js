@@ -4,10 +4,11 @@ let fs = require("flowfs");
 let yargs = require("yargs");
 let findConfigFile = require("./utils/findConfigFile");
 let svelteViewEngine = require("..");
-let CONFIG_FILENAME = require("./configFilename");
+let {CONFIG_FILENAME} = require("./constants");
 
 function error(message) {
 	console.error(message);
+	
 	process.exit(1);
 }
 

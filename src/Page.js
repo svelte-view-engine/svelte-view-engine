@@ -134,6 +134,7 @@ module.exports = class {
 			
 			this.watcher.on("change", async () => {
 				this.ready = false;
+				this.buildFile.deleteIfExists();
 				
 				if (this.active) {
 					this.scheduler.build(this);
@@ -183,7 +184,7 @@ module.exports = class {
 	
 	async render(locals, forEmail=false) {
 		if (locals._rebuild) {
-			await this.scheduler.build(this).complete;
+			await this.scheduler.build(this);
 		}
 		
 		if (!this.ready) {

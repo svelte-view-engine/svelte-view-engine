@@ -1,6 +1,6 @@
 let fs = require("fs");
 let flowfs = require("flowfs");
-let CONFIG_FILENAME = require("../configFilename");
+let {CONFIG_FILENAME} = require("../constants");
 
 module.exports = function() {
 	let dir = flowfs(process.cwd());
