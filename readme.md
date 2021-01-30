@@ -248,3 +248,8 @@ Options
 `svelteDirs`: Optional.  Pass an array of directories that contain Svelte files to mark files NOT within those directories as external for rolling up SSR modules.  If ommitted, no modules will be treated as external.  The purpose of this is to avoid having copies of e.g. utility scripts bundled into every SSR module.
 
 `buildScript`: Optional.  Path to a custom build script.  The build script should accept a JSON payload on either stdin or as the only argument (both are provided), and write out the JSON manifest and CSS/JS files for the page (see [https://github.com/svelte-view-engine/svelte-view-engine/blob/master/src/build/build.js](https://github.com/svelte-view-engine/svelte-view-engine/blob/master/src/build/build.js).
+
+Projects using svelte-view-engine
+---------------------------------
+
+[printr.dev](https://printr.dev/)
