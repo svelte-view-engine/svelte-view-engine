@@ -115,7 +115,7 @@ module.exports = class {
 	
 	async render(path, locals, callback, forEmail=false) {
 		if (!this.template.ready) {
-			await this.template._init();
+			await this.template._init;
 		}
 		
 		if (!osPath.isAbsolute(path)) {
