@@ -331,7 +331,7 @@ module.exports = class {
 			return this.template.render({
 				head,
 				html,
-				css: css.code,
+				css: css && css.code,
 				js: js.code,
 				jsPath,
 				cssPath,
