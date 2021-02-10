@@ -151,12 +151,13 @@ module.exports = class {
 				this.buildFile.deleteIfExists();
 				
 				if (this.active) {
-					this.scheduler.build(this);
+					await this.scheduler.build(this);
 				} else {
 					await sleep(100);
 					
-					this.scheduler.scheduleBuild(this);
+					await this.scheduler.scheduleBuild(this);
 				}
+				this.init();
 			});
 			
 			if (this.config.liveReload) {
