@@ -229,7 +229,8 @@ Options
 
 `type`: Page file extension.  It's recommended to use a different extension for pages and components, so that svelte-view-engine doesn't unnecessarily build non-page components it finds in the pages directory (e.g. .html for pages and .svelte for other components).  Defaults to `"html"`.
 
-`init`: Find all pages (files of `type` in `dir`) and initialise them on startup.  Defaults to `false`.
+`init`: Find all pages (files of `type` in `dir`) and initialize them on
+startup. If false, pages will be lazy initialized on render.  Defaults to `true`.
 
 `buildDir`: Where to output built pages and their CSS and JS files.
 

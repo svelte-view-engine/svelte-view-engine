@@ -18,7 +18,8 @@ module.exports = class {
 		
 		this.scheduler = buildScheduler(config);
 		this.pages = {};
-		this.init();
+		// this is used in a test
+		this._initPromise = this.init();
 		this.render = this.render.bind(this);
 	}
 	
@@ -40,7 +41,7 @@ module.exports = class {
 		}
 		
 		if (this.config.init) {
-			this.initPages();
+			return this.initPages();
 		}
 	}
 	
@@ -115,7 +116,7 @@ module.exports = class {
 	
 	async render(path, locals, callback, forEmail=false) {
 		if (!this.template.ready) {
-			await this.template._init;
+			await this.template.load();
 		}
 		
 		if (!osPath.isAbsolute(path)) {

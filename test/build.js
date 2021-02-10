@@ -1,6 +1,9 @@
 let yargs = require("yargs");
 let fs = require("flowfs");
 
+// default the --css option to true
+yargs.option('css', { type: 'boolean', default: true });
+
 (async function() {
 	let {
 		name,
@@ -27,9 +30,14 @@ let fs = require("flowfs");
 				};
 			`,
 			
-			css: {
-				code: "css",
-			},
+			// this will add a css property to server if css is set to false. If not
+			// specified, it will default to true. This is to simulate a component
+			// without a style block
+			...(yargs.argv.css && {
+				css: {
+					code: "css"
+				}
+			}),
 		},
 		
 		client: {
