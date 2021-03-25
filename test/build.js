@@ -34,9 +34,7 @@ yargs.option('css', { type: 'boolean', default: true });
 			// specified, it will default to true. This is to simulate a component
 			// without a style block
 			...(yargs.argv.css && {
-				css: {
-					code: "css"
-				}
+				css: "css"
 			}),
 		},
 		

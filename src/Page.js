@@ -259,7 +259,7 @@ module.exports = class {
 			}
 		}
 		
-		if (this.serverComponent && this.config.env !== "dev") {
+		if (this.serverComponent) {
 			({css} = this.serverComponent);
 		}
 		
@@ -346,7 +346,7 @@ module.exports = class {
 			return this.template.render({
 				head,
 				html,
-				css: css && css.code,
+				css,
 				js: js.code,
 				jsPath,
 				cssPath,
