@@ -23,11 +23,30 @@ module.exports = class {
 				this.load();
 			});
 		}
-		
-		this._init = this.load();
+
+		// only eager load if init is set to true in config, otherwise engine.render
+		// will lazy load the template
+		if (config.init) {
+			this.load();
+		}
+	}
+
+	/**
+	 * Load the template. If load is already in flight, the existing promise will
+	 * be returned
+	 */
+	async load() {
+		// this makes sure the template will only be initialized once since the
+		// constructor or the render method might
+		if (!this._loadPromise) {
+			this._loadPromise = this.doLoad().then(() => {
+				this._loadPromise = undefined;
+			});
+		}
+		return this._loadPromise;
 	}
 	
-	async load() {
+	async doLoad() {
 		let str = await fs(this.path).read();
 		
 		// process include directives first

@@ -91,18 +91,32 @@ module.exports = class {
 	
 	build() {
 		let {promise, child: buildProcess} = this.runBuildScript();
-		let complete = promise.then(() => this.init());
 		
 		return {
-			promise,
 			buildProcess,
-			complete,
+			complete: promise,
 		};
 	}
 	
-	async init(priority=false) {
+	/**
+	 * Init the page. If init is already in flight, the existing promise will be
+	 * returned
+	 * @param {*} priority - the priority of the build in the queue if needed
+	 */
+	async init(priority = false, force = false) {
+		// this makes sure the page will only be initialized once since both page build
+		// and engine init may initialize the page
+		if (!this._initPromise) {
+			this._initPromise = this.doInit(priority).then(() => {
+				this._initPromise = undefined;
+			});
+		}
+		return this._initPromise;
+	}
+
+	async doInit(priority=false) {
 		if (!await this.buildFile.exists()) {
-			return this.scheduler.scheduleBuild(this, priority);
+			await this.scheduler.scheduleBuild(this, priority);
 		}
 		
 		try {
@@ -137,12 +151,13 @@ module.exports = class {
 				this.buildFile.deleteIfExists();
 				
 				if (this.active) {
-					this.scheduler.build(this);
+					await this.scheduler.build(this);
 				} else {
 					await sleep(100);
 					
-					this.scheduler.scheduleBuild(this);
+					await this.scheduler.scheduleBuild(this);
 				}
+				this.init();
 			});
 			
 			if (this.config.liveReload) {
@@ -244,7 +259,7 @@ module.exports = class {
 			}
 		}
 		
-		if (this.serverComponent && this.config.env !== "dev") {
+		if (this.serverComponent) {
 			({css} = this.serverComponent);
 		}
 		
@@ -331,7 +346,7 @@ module.exports = class {
 			return this.template.render({
 				head,
 				html,
-				css: css.code,
+				css,
 				js: js.code,
 				jsPath,
 				cssPath,

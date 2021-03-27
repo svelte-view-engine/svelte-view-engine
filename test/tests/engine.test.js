@@ -2,9 +2,8 @@ let fs = require("flowfs");
 let {deep} = require("../utils/assertions");
 let svelteViewEngine = require("../../index");
 
+let here = path => fs("test").child(path).path;
 function config(overrides) {
-	let here = path => fs("test").child(path).path;
-	
 	return Object.assign({
 		template: here("./template.json"),
 		dir: here("./pages"),
@@ -27,8 +26,10 @@ describe("svelte-view-engine", function() {
 			await fs(config().buildDir).rmrf();
 		});
 		
-		it("renders page from no build dir", async function() {
-			let engine = svelteViewEngine(config());
+		it("renders page from no build dir, no init", async function() {
+			let engine = svelteViewEngine(config({
+				init: false
+			}));
 			
 			let res = JSON.parse(await render(engine, "A"));
 			
@@ -41,9 +42,60 @@ describe("svelte-view-engine", function() {
 				name: "A",
 			});
 		});
+
+		it("renders page from no build dir, no init, without css", async function() {
+			let engine = svelteViewEngine(config({
+				init: false,
+				// hacky way to tell the test build script to not include css
+				buildScript: `${here("./build.js")} --no-css`,
+			}));
+			
+			let res = JSON.parse(await render(engine, "A"));
+			
+			deep(res, {
+				head: "head",
+				css: "undefined",
+				html: "html",
+				props: "{}",
+				js: "client component",
+				name: "A",
+			});
+		});
+
+		it("renders page from no build dir, no init", async function() {
+			let engine = svelteViewEngine(config({
+				init: true
+			}));
+			
+			let res = JSON.parse(await render(engine, "A"));
+			
+			deep(res, {
+				head: "head",
+				css: "css",
+				html: "html",
+				props: "{}",
+				js: "client component",
+				name: "A",
+			});
+
+			await engine._initPromise;
+			
+			a = JSON.parse(await render(engine, "A"));
+			
+			deep(a, {
+				head: "head",
+				css: "css",
+				html: "html",
+				props: "{}",
+				js: "client component",
+				name: "A",
+			});
+		});
 		
 		it("renders page from prebuilt, no init", async function() {
-			let engine = svelteViewEngine(config());
+			let engine = svelteViewEngine(config({
+				init: false
+			}));
 			
 			await engine.buildPages();
 			
@@ -60,7 +112,9 @@ describe("svelte-view-engine", function() {
 		});
 		
 		it("renders page from prebuilt, init (before and after init)", async function() {
-			let prebuild = svelteViewEngine(config());
+			let prebuild = svelteViewEngine(config({
+				init: false
+			}));
 			
 			await prebuild.buildPages();
 			
@@ -79,7 +133,7 @@ describe("svelte-view-engine", function() {
 				name: "A",
 			});
 			
-			await engine._init;
+			await engine._initPromise;
 			
 			a = JSON.parse(await render(engine, "A"));
 			
